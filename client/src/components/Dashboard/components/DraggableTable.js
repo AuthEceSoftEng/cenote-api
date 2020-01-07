@@ -9,6 +9,7 @@ export default class DraggableTable extends Component {
     super(props);
     this.dragged = null;
     this.reorder = [];
+    this.reactTable = null;
   }
 
   componentDidMount() {
@@ -55,6 +56,6 @@ export default class DraggableTable extends Component {
     const draggableColumns = columns.map(col => ({ ...col, Header: <span className="draggable-header">{col.Header}</span> }));
     this.reorder.forEach(el => (draggableColumns[el.a] = draggableColumns.splice(el.b, 1, draggableColumns[el.a])[0]));
 
-    return (<ReactTable {...this.props} data={data} columns={draggableColumns} />);
+    return (<ReactTable ref={r => this.reactTable = r} {...this.props} data={data} columns={draggableColumns} />);
   }
 }

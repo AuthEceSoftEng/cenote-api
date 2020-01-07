@@ -14,6 +14,13 @@ import { DraggableTable } from '.';
 
 const getRecentEventsAndCache = mem(getRecentEvents);
 
+const get = (obj, path, defaultValue) => {
+  const result = String.prototype.split.call(path, /[,[\].]+?/)
+    .filter(Boolean)
+    .reduce((res, key) => ((res !== null && res !== undefined) ? res[key] : res), obj);
+  return (result === undefined || result === obj) ? defaultValue : result;
+};
+
 export default class Analytics extends React.Component {
   static propTypes = { collections: PropTypes.object, readKey: PropTypes.string.isRequired, projectId: PropTypes.string.isRequired }
 
@@ -43,6 +50,7 @@ export default class Analytics extends React.Component {
     this.handleCustomStartDateChange = this.handleCustomStartDateChange.bind(this);
     this.handleCustomEndDateChange = this.handleCustomEndDateChange.bind(this);
     this.downloadData = this.downloadData.bind(this);
+    this.dragTable = null;
   }
 
   componentWillReceiveProps(nextProps) {
@@ -63,7 +71,7 @@ export default class Analytics extends React.Component {
     this.setState({ loading: true });
     getRecentEventsAndCache(projectId, collection, readKey, parseInt(this.input.current.value || 2e3, 10)).then((tableData) => {
       if (interval === 'custom_timeframe') {
-        tableData.events = tableData.filter(el => moment(el.cenote$timestamp).isBetween(startDate, endDate));
+        tableData.events = tableData.filter(el => moment(el.cenote$timestamp).isBetween(endDate, startDate));
       } else {
         tableData.events = tableData.filter((el) => {
           let filterClause = moment(el.cenote$timestamp).year() === moment().year();
@@ -119,8 +127,13 @@ export default class Analytics extends React.Component {
   }
 
   downloadData() {
-    const { tableData: { events: data } } = this.state;
-    return parse(data);
+    if (get(this.dragTable, 'reactTable.getResolvedState')) {
+      return parse(this.dragTable.reactTable.getResolvedState().sortedData.map((e) => {
+        const { _original, _index, _subRows, _nestingLevel, ...data } = e;
+        return data;
+      }));
+    }
+    return get(this.state, 'tableData.events.data');
   }
 
   render() {
@@ -230,13 +243,13 @@ export default class Analytics extends React.Component {
               <div className="field-body is-normal">
                 <div style={{ width: '100%', height: '80%' }}>
                   <DatePicker
-                    selected={startDate}
+                    selected={endDate}
                     showTimeSelect
                     timeFormat="HH:mm"
                     timeIntervals={30}
                     dateFormat="MMMM d, yyyy h:mm aa"
                     timeCaption="time"
-                    onChange={this.handleCustomStartDateChange}
+                    onChange={this.handleCustomEndDateChange}
                     className="input is-normal"
                   />
                 </div>
@@ -249,13 +262,13 @@ export default class Analytics extends React.Component {
               <div className="field-body is-normal">
                 <div style={{ width: '100%', height: '80%' }}>
                   <DatePicker
-                    selected={endDate}
+                    selected={startDate}
                     showTimeSelect
                     timeFormat="HH:mm"
                     timeIntervals={30}
                     dateFormat="MMMM d, yyyy h:mm aa"
                     timeCaption="time"
-                    onChange={this.handleCustomEndDateChange}
+                    onChange={this.handleCustomStartDateChange}
                     className="input is-normal"
                   />
                 </div>
@@ -269,6 +282,7 @@ export default class Analytics extends React.Component {
           <DraggableTable
             showPageSizeOptions={false}
             filterable
+            ref={r => this.dragTable = r}
             defaultPageSize={15}
             data={tableData.events}
             columns={tableData.properties.map(el => ({
