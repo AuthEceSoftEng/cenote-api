@@ -44,7 +44,7 @@ export default function Project(props) {
         flexDirection: 'column',
       }}
     >
-      <div style={{ backgroundColor: '#264184', color: 'white', borderTopLeftRadius: '1rem', borderTopRightRadius: '1rem' }}>
+      <div style={{ backgroundColor: '#00A09E', color: 'white', borderTopLeftRadius: '1rem', borderTopRightRadius: '1rem' }}>
         <article className="media">
           <div className="media-content">
             <div className="content" style={{ padding: '0.2rem' }}>
@@ -73,7 +73,7 @@ export default function Project(props) {
           <div className="level-left" />
           <div className="level-right">
             <span className="icon space-right" role="button" tabIndex={0} onClick={openProjectInfo} onKeyPress={openProjectInfo}>
-              <FontAwesomeIcon icon={faFolderOpen} color="orange" size="lg" style={{ color: '#264184' }} />
+              <FontAwesomeIcon icon={faFolderOpen} color="orange" size="lg" style={{ color: '#00A09E' }} />
             </span>
             {edit ? (
               <span
@@ -84,16 +84,16 @@ export default function Project(props) {
                 onClick={updateProjectTitle}
                 onKeyPress={updateProjectTitle}
               >
-                <FontAwesomeIcon icon={faSave} size="lg" style={{ color: '#264184' }} />
+                <FontAwesomeIcon icon={faSave} size="lg" style={{ color: '#00A09E' }} />
               </span>
             ) : (owner === currentUser) && (
             <span className="icon space-right" role="button" tabIndex={0} onClick={editProject} onKeyPress={editProject}>
-              <FontAwesomeIcon icon={faPencilAlt} size="lg" style={{ color: '#264184' }} />
+              <FontAwesomeIcon icon={faPencilAlt} size="lg" style={{ color: '#00A09E' }} />
             </span>
             )}
             {edit ? (
               <span className="icon" role="button" tabIndex={-1} onClick={cancelEdit} onKeyPress={cancelEdit}>
-                <FontAwesomeIcon icon={faBan} size="lg" style={{ color: '#264184' }} />
+                <FontAwesomeIcon icon={faBan} size="lg" style={{ color: '#00A09E' }} />
               </span>
             ) : (owner === currentUser) && (
             <span
@@ -103,7 +103,7 @@ export default function Project(props) {
               onClick={() => openModal(owner, currentUser)}
               onKeyPress={() => openModal(owner, currentUser)}
             >
-              <FontAwesomeIcon icon={faTrashAlt} size="lg" style={{ color: '#264184' }} />
+              <FontAwesomeIcon icon={faTrashAlt} size="lg" style={{ color: '#00A09E' }} />
             </span>
             )}
           </div>

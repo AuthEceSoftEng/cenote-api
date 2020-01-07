@@ -54,7 +54,7 @@ class AddProject extends React.Component {
         </div>
         <div className="is-2">
           <Button
-            style={{ width: '100%', borderTopLeftRadius: 0, borderBottomLeftRadius: 0, backgroundColor: '#264184' }}
+            style={{ width: '100%', borderTopLeftRadius: 0, borderBottomLeftRadius: 0, backgroundColor: '#00A09E' }}
             onClick={this.addProject}
             label="+Add"
             type="success"

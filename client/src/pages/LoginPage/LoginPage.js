@@ -69,7 +69,7 @@ class LoginPage extends React.Component {
           alt="cenote"
           style={{ width: '15rem', alignSelf: 'center' }}
         />
-        <h2 className="title is-2 has-text-centered" style={{ color: '#264184' }}>Welcome to cenote&apos;s Dashboard</h2>
+        <h2 className="title is-2 has-text-centered" style={{ color: '#00A09E' }}>Welcome to cenote&apos;s Dashboard</h2>
         <FormInput
           onChange={e => this.updateUsername(e.target.value)}
           placeholder="Username"
@@ -89,7 +89,7 @@ class LoginPage extends React.Component {
             className="button"
             onClick={this.login}
             style={{
-              backgroundColor: '#264184',
+              backgroundColor: '#00A09E',
               color: 'white',
               fontWeight: 'bold',
               width: '75%',
@@ -101,10 +101,10 @@ class LoginPage extends React.Component {
         </p>
         <p align="center">
           {'Forgot password?  '}
-          <Link to="/recovery" style={{ color: '#264184' }}>Click here!</Link>
+          <Link to="/recovery" style={{ color: '#00A09E' }}>Click here!</Link>
         </p>
         <hr style={{
-          backgroundColor: '#11183a',
+          backgroundColor: '#10447a',
           height: '1px',
           margin: '.5rem',
         }}
@@ -117,8 +117,8 @@ class LoginPage extends React.Component {
               className="button"
               style={{
                 borderWidth: '1px',
-                borderColor: '#264184',
-                color: '#264184',
+                borderColor: '#00A09E',
+                color: '#00A09E',
                 fontWeight: 'bold',
                 width: '75%',
                 fontSize: '1.2rem',

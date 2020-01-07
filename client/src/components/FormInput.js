@@ -30,17 +30,17 @@ export default function FormInput(props) {
           style={{
             borderTopRightRadius: '.5rem',
             borderBottomRightRadius: '.5rem',
-            borderColor: '#264184',
+            borderColor: '#00A09E',
             borderWidth: '1px',
             paddingLeft: '3rem',
             fontSize: '1.3rem',
-            color: '#264184',
+            color: '#00A09E',
           }}
         />
         {leftIcon && (
           <span
             className="icon is-left"
-            style={{ backgroundColor: '#264184', borderTopLeftRadius: '.5rem', borderBottomLeftRadius: '.5rem', height: '2.9rem' }}
+            style={{ backgroundColor: '#00A09E', borderTopLeftRadius: '.5rem', borderBottomLeftRadius: '.5rem', height: '2.9rem' }}
           >
             <FontAwesomeIcon icon={leftIcon} />
           </span>
