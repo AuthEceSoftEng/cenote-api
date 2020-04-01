@@ -15,8 +15,7 @@ const mongooseOptions = {
   useNewUrlParser: true,
   useCreateIndex: true,
   useFindAndModify: false,
-  reconnectTries: 30,
-  reconnectInterval: 500,
+  useUnifiedTopology: true,
 };
 
 if (process.env.DATABASE_URL.includes('authSource')) {
