@@ -1,11 +1,11 @@
-const mongoose = require('mongoose');
-const { MongooseAutoIncrementID } = require('mongoose-auto-increment-reworked');
-const immutablePlugin = require('mongoose-immutable');
-const bcrypt = require('bcryptjs');
-const R = require('ramda');
-const uuid = require('uuid/v4');
+const mongoose = require("mongoose");
+const { MongooseAutoIncrementID } = require("mongoose-auto-increment-reworked");
+const immutablePlugin = require("mongoose-immutable");
+const bcrypt = require("bcryptjs");
+const R = require("ramda");
+const uuid = require("uuid/v4");
 
-const pid = () => `pid${uuid().replace(/-/g, '')}`;
+const pid = () => `pid${uuid().replace(/-/g, "")}`;
 
 
 const organizationSchema = new mongoose.Schema({
@@ -23,11 +23,11 @@ const organizationSchema = new mongoose.Schema({
   resetPasswordExpires: Date,
 });
 
-MongooseAutoIncrementID.initialise('counters');
+MongooseAutoIncrementID.initialise("counters");
 
 organizationSchema.plugin(MongooseAutoIncrementID.plugin, {
-  modelName: 'Organization',
-  field: 'organization',
+  modelName: "Organization",
+  field: "organization",
   incrementBy: 1,
   startAt: 1,
   unique: true,
@@ -36,13 +36,13 @@ organizationSchema.plugin(MongooseAutoIncrementID.plugin, {
 });
 organizationSchema.plugin(immutablePlugin);
 
-organizationSchema.virtual('fullName').get(() => {
+organizationSchema.virtual("fullName").get(() => {
   if (this.firstName && this.lastName) return `${this.firstName} ${this.lastName}`;
   if (this.firstName && !this.lastName) return this.firstName;
   if (!this.firstName && this.lastName) return this.lastName;
   return undefined;
 });
-organizationSchema.virtual('initials').get(() => (this.firstName && this.lastName && `${this.firstName[0].concat(this.lastName[0]).toUpperCase()}`));
+organizationSchema.virtual("initials").get(() => (this.firstName && this.lastName && `${this.firstName[0].concat(this.lastName[0]).toUpperCase()}`));
 
 organizationSchema.methods.validPassword = function validPassword(password) {
   return bcrypt.compareSync(password, this.password);
@@ -69,9 +69,9 @@ organizationSchema.methods.hashPassword = function hashPassword() {
   });
 };
 organizationSchema.methods.hidePassword = function hidePassword() {
-  return R.omit(['password', '__v', '_id'], this.toObject({ virtuals: true }));
+  return R.omit(["password", "__v", "_id"], this.toObject({ virtuals: true }));
 };
 
-const Organization = mongoose.model('Organization', organizationSchema);
+const Organization = mongoose.model("Organization", organizationSchema);
 
 module.exports = Organization;

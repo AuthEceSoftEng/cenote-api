@@ -1,11 +1,11 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
-import { identity, pick } from 'ramda';
-import classNames from 'classnames';
+import React from "react";
+import PropTypes from "prop-types";
+import { connect } from "react-redux";
+import { identity, pick } from "ramda";
+import classNames from "classnames";
 
-import { attemptUpdateEmail } from '../actions/organization';
-import { validateEmail } from '../utils/validation';
+import { attemptUpdateEmail } from "../actions/organization";
+import { validateEmail } from "../utils/validation";
 
 class ChangeEmailContainer extends React.Component {
   static propTypes = {
@@ -19,9 +19,9 @@ class ChangeEmailContainer extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      newEmail: '',
-      confirmEmail: '',
-      message: '',
+      newEmail: "",
+      confirmEmail: "",
+      message: "",
       valid: false,
     };
   }
@@ -46,10 +46,10 @@ class ChangeEmailContainer extends React.Component {
     const { attemptUpdateEmail: attemptupdateEmail } = this.props;
     if (valid && newEmail === confirmEmail && oldEmail) {
       attemptupdateEmail({ oldEmail, newEmail }).then(() => this.setState({
-        oldEmail: '',
-        newEmail: '',
-        confirmEmail: '',
-        message: '',
+        oldEmail: "",
+        newEmail: "",
+        confirmEmail: "",
+        message: "",
         valid: false,
       })).catch(identity);
     }
@@ -61,42 +61,42 @@ class ChangeEmailContainer extends React.Component {
 
     const newEmailHelpClasses = classNames({
       help: true,
-      'is-danger': !valid,
-      'is-success': valid,
+      "is-danger": !valid,
+      "is-success": valid,
     });
 
     const newEmailIconClasses = classNames({
       fa: true,
-      'fa-check': valid,
-      'is-success': valid,
-      'fa-warning': newEmail && !valid,
-      'is-danger': newEmail && !valid,
+      "fa-check": valid,
+      "is-success": valid,
+      "fa-warning": newEmail && !valid,
+      "is-danger": newEmail && !valid,
     });
 
     const newEmailInputClasses = classNames({
       input: true,
-      'is-success': valid,
-      'is-danger': newEmail && !valid,
+      "is-success": valid,
+      "is-danger": newEmail && !valid,
     });
 
     const confirmEmailIconClasses = classNames({
       fa: true,
-      'fa-check': confirmEmail && match,
-      'is-success': confirmEmail && match,
-      'fa-warning': confirmEmail && !match,
-      'is-danger': confirmEmail && !match,
+      "fa-check": confirmEmail && match,
+      "is-success": confirmEmail && match,
+      "fa-warning": confirmEmail && !match,
+      "is-danger": confirmEmail && !match,
     });
 
     const confirmEmailInputClasses = classNames({
       input: true,
-      'is-success': confirmEmail && match,
-      'is-danger': confirmEmail && !match,
+      "is-success": confirmEmail && match,
+      "is-danger": confirmEmail && !match,
     });
 
     const confirmEmailHelpClasses = classNames({
       help: true,
-      'is-success': match,
-      'is-danger': !match,
+      "is-success": match,
+      "is-danger": !match,
     });
 
     return (
@@ -106,7 +106,7 @@ class ChangeEmailContainer extends React.Component {
         <div className="field">
           <p className="control">
             <label className="label" htmlFor="old-email">
-              {'Current Email'}
+              Current Email
               <input
                 id="old-email"
                 className="input"
@@ -121,7 +121,7 @@ class ChangeEmailContainer extends React.Component {
         <div className="field has-help">
           <p className="control has-icons-right">
             <label htmlFor="new-email" className="label">
-              {'New Email'}
+              New Email
               <input
                 id="new-email"
                 className={newEmailInputClasses}
@@ -145,7 +145,7 @@ class ChangeEmailContainer extends React.Component {
         <div className="field has-help">
           <p className="control has-icons-right">
             <label htmlFor="confirm-email" className="label">
-              {'Confirm Email'}
+              Confirm Email
               <input
                 id="confirm-email"
                 className={confirmEmailInputClasses}
@@ -161,7 +161,7 @@ class ChangeEmailContainer extends React.Component {
           </p>
           {confirmEmail && (
             <p className={confirmEmailHelpClasses}>
-              {match ? 'Emails match!' : 'Emails must match!'}
+              {match ? "Emails match!" : "Emails must match!"}
             </p>
           )}
         </div>
@@ -173,7 +173,7 @@ class ChangeEmailContainer extends React.Component {
           onClick={this.save}
           disabled={!match || !valid || !oldEmail}
         >
-          {'Update Email'}
+          Update Email
         </button>
       </div>
     );
@@ -181,7 +181,7 @@ class ChangeEmailContainer extends React.Component {
 }
 
 
-const mapStateToProps = pick(['organization']);
+const mapStateToProps = pick(["organization"]);
 const mapDispatchToProps = dispatch => ({ attemptUpdateEmail: emailInfo => dispatch(attemptUpdateEmail(emailInfo)) });
 
 export default connect(mapStateToProps, mapDispatchToProps)(ChangeEmailContainer);

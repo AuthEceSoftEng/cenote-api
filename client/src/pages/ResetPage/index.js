@@ -1,1 +1,1 @@
-export { default } from './ResetPage';
+export { default } from "./ResetPage";

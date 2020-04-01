@@ -1,11 +1,11 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
-import { identity, pick } from 'ramda';
-import classNames from 'classnames';
+import React from "react";
+import PropTypes from "prop-types";
+import { connect } from "react-redux";
+import { identity, pick } from "ramda";
+import classNames from "classnames";
 
-import { attemptUpdateUsername } from '../actions/organization';
-import { validateUsername } from '../utils/validation';
+import { attemptUpdateUsername } from "../actions/organization";
+import { validateUsername } from "../utils/validation";
 
 class ChangeUsernameContainer extends React.Component {
   static propTypes = {
@@ -16,9 +16,9 @@ class ChangeUsernameContainer extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      newUsername: '',
-      confirmUsername: '',
-      message: '',
+      newUsername: "",
+      confirmUsername: "",
+      message: "",
       valid: false,
       oldUsername: props.organization.username,
     };
@@ -44,10 +44,10 @@ class ChangeUsernameContainer extends React.Component {
     const { attemptUpdateUsername: attemptupdateUsername } = this.props;
     if (valid && newUsername === confirmUsername && oldUsername) {
       attemptupdateUsername({ oldUsername, newUsername }).then(() => this.setState({
-        oldUsername: '',
-        newUsername: '',
-        confirmUsername: '',
-        message: '',
+        oldUsername: "",
+        newUsername: "",
+        confirmUsername: "",
+        message: "",
         valid: false,
       })).catch(identity);
     }
@@ -59,42 +59,42 @@ class ChangeUsernameContainer extends React.Component {
 
     const newUsernameHelpClasses = classNames({
       help: true,
-      'is-danger': !valid,
-      'is-success': valid,
+      "is-danger": !valid,
+      "is-success": valid,
     });
 
     const newUsernameIconClasses = classNames({
       fa: true,
-      'fa-check': valid,
-      'is-success': valid,
-      'fa-warning': newUsername && !valid,
-      'is-danger': newUsername && !valid,
+      "fa-check": valid,
+      "is-success": valid,
+      "fa-warning": newUsername && !valid,
+      "is-danger": newUsername && !valid,
     });
 
     const newUsernameInputClasses = classNames({
       input: true,
-      'is-success': valid,
-      'is-danger': newUsername && !valid,
+      "is-success": valid,
+      "is-danger": newUsername && !valid,
     });
 
     const confirmUsernameIconClasses = classNames({
       fa: true,
-      'fa-check': confirmUsername && match,
-      'is-success': confirmUsername && match,
-      'fa-warning': confirmUsername && !match,
-      'is-danger': confirmUsername && !match,
+      "fa-check": confirmUsername && match,
+      "is-success": confirmUsername && match,
+      "fa-warning": confirmUsername && !match,
+      "is-danger": confirmUsername && !match,
     });
 
     const confirmUsernameInputClasses = classNames({
       input: true,
-      'is-success': confirmUsername && match,
-      'is-danger': confirmUsername && !match,
+      "is-success": confirmUsername && match,
+      "is-danger": confirmUsername && !match,
     });
 
     const confirmUsernameHelpClasses = classNames({
       help: true,
-      'is-success': match,
-      'is-danger': !match,
+      "is-success": match,
+      "is-danger": !match,
     });
 
     return (
@@ -104,7 +104,7 @@ class ChangeUsernameContainer extends React.Component {
         <div className="field">
           <p className="control">
             <label className="label" htmlFor="old-username">
-              {'Current Username'}
+              Current Username
               <input
                 id="old-username"
                 className="input"
@@ -119,7 +119,7 @@ class ChangeUsernameContainer extends React.Component {
         <div className="field has-help">
           <p className="control has-icons-right">
             <label htmlFor="new-username" className="label">
-              {'New Username'}
+              New Username
               <input
                 id="new-username"
                 className={newUsernameInputClasses}
@@ -143,7 +143,7 @@ class ChangeUsernameContainer extends React.Component {
         <div className="field has-help">
           <p className="control has-icons-right">
             <label htmlFor="confirm-username" className="label">
-              {'Confirm Username'}
+              Confirm Username
               <input
                 id="confirm-username"
                 className={confirmUsernameInputClasses}
@@ -159,7 +159,7 @@ class ChangeUsernameContainer extends React.Component {
           </p>
           {confirmUsername && (
             <p className={confirmUsernameHelpClasses}>
-              {match ? 'Usernames match!' : 'Usernames must match!'}
+              {match ? "Usernames match!" : "Usernames must match!"}
             </p>
           )}
         </div>
@@ -171,7 +171,7 @@ class ChangeUsernameContainer extends React.Component {
           onClick={this.save}
           disabled={!match || !valid || !oldUsername}
         >
-          {'Update Username'}
+          Update Username
         </button>
       </div>
     );
@@ -179,7 +179,7 @@ class ChangeUsernameContainer extends React.Component {
 }
 
 
-const mapStateToProps = pick(['organization']);
+const mapStateToProps = pick(["organization"]);
 const mapDispatchToProps = dispatch => ({ attemptUpdateUsername: usernameInfo => dispatch(attemptUpdateUsername(usernameInfo)) });
 
 export default connect(mapStateToProps, mapDispatchToProps)(ChangeUsernameContainer);

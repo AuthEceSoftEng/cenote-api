@@ -1,6 +1,6 @@
-const express = require('express');
+const express = require("express");
 
-const { Organization, Project } = require('../models');
+const { Organization, Project } = require("../models");
 
 const router = express.Router();
 
@@ -32,12 +32,12 @@ const router = express.Router();
 * @apiUse NoCredentialsSentError
 * @apiUse KeyNotAuthorizedError
 */
-router.get('/:ORG_NAME/projects', (req, res) => {
+router.get("/:ORG_NAME/projects", (req, res) => {
   Organization.findOne({ username: req.params.ORG_NAME }, {}, { lean: true }, (err, org) => {
-    if (err || !org) return res.status(404).json({ error: 'OrganizationNotFoundError' });
+    if (err || !org) return res.status(404).json({ error: "OrganizationNotFoundError" });
     const orgKey = req.headers.authorization;
-    if (!orgKey) return res.status(403).json({ error: 'NoCredentialsSentError' });
-    if (orgKey !== org.organizationId) return res.status(401).json({ error: 'KeyNotAuthorizedError' });
+    if (!orgKey) return res.status(403).json({ error: "NoCredentialsSentError" });
+    if (orgKey !== org.organizationId) return res.status(401).json({ error: "KeyNotAuthorizedError" });
     return Project.find({ organization: org._id }, { _id: 0, __v: 0, organization: 0 }, { lean: true }, (err2, projects) => {
       if (err2 || projects.length === 0) return res.status(404).json({ message: `Can't find projects of ${req.params.ORG_NAME}!`, err });
       return res.status(200).json({ projects });
@@ -75,20 +75,20 @@ router.get('/:ORG_NAME/projects', (req, res) => {
 * @apiUse NoDataSentError
 * @apiUse AlreadyExistsError
 */
-router.post('/:ORG_NAME/projects', (req, res) => {
+router.post("/:ORG_NAME/projects", (req, res) => {
   Organization.findOne({ username: req.params.ORG_NAME }, {}, { lean: true }, (err, org) => {
-    if (err || !org) return res.status(404).json({ error: 'OrganizationNotFoundError' });
+    if (err || !org) return res.status(404).json({ error: "OrganizationNotFoundError" });
     const orgKey = req.headers.authorization;
-    if (!orgKey) return res.status(403).json({ error: 'NoCredentialsSentError' });
-    if (orgKey !== org.organizationId) return res.status(401).json({ error: 'KeyNotAuthorizedError' });
-    if (!req.body.title) return res.status(400).json({ error: 'NoDataSentError' });
+    if (!orgKey) return res.status(403).json({ error: "NoCredentialsSentError" });
+    if (orgKey !== org.organizationId) return res.status(401).json({ error: "KeyNotAuthorizedError" });
+    if (!req.body.title) return res.status(400).json({ error: "NoDataSentError" });
     return Project.count({ organization: org._id, title: req.body.title }, (err2, count) => {
-      if (err2) return res.status(400).send({ message: 'Create project failed', err });
-      if (count > 0) return res.status(409).send({ error: 'AlreadyExistsError' });
+      if (err2) return res.status(400).send({ message: "Create project failed", err });
+      if (count > 0) return res.status(409).send({ error: "AlreadyExistsError" });
       const newProject = Project({ organization: org._id, title: req.body.title });
       return newProject.save((err3, savedProject) => {
-        if (err3) return res.status(400).send({ message: 'Create project failed', err });
-        return res.send({ message: 'Project successfully created!', project: savedProject.hide() });
+        if (err3) return res.status(400).send({ message: "Create project failed", err });
+        return res.send({ message: "Project successfully created!", project: savedProject.hide() });
       });
     });
   });
@@ -115,15 +115,15 @@ router.post('/:ORG_NAME/projects', (req, res) => {
 * @apiUse KeyNotFoundError
 * @apiUse KeyNotAuthorizedError
 */
-router.get('/:ORG_NAME/projects/:PROJECT_ID', (req, res) => {
+router.get("/:ORG_NAME/projects/:PROJECT_ID", (req, res) => {
   Organization.findOne({ username: req.params.ORG_NAME }, {}, { lean: true }, (err, org) => {
-    if (err || !org) return res.status(404).json({ error: 'OrganizationNotFoundError' });
+    if (err || !org) return res.status(404).json({ error: "OrganizationNotFoundError" });
     const orgKey = req.headers.authorization;
-    if (!orgKey) return res.status(403).json({ error: 'NoCredentialsSentError' });
-    if (orgKey !== org.organizationId) return res.status(401).json({ error: 'KeyNotAuthorizedError' });
+    if (!orgKey) return res.status(403).json({ error: "NoCredentialsSentError" });
+    if (orgKey !== org.organizationId) return res.status(401).json({ error: "KeyNotAuthorizedError" });
     return Project.findOne({ organization: org._id, projectId: req.params.PROJECT_ID },
       { _id: 0, __v: 0, organization: 0 }, { lean: true }, (err2, project) => {
-        if (err2 || !project) return res.status(404).json({ error: 'ProjectNotFoundError' });
+        if (err2 || !project) return res.status(404).json({ error: "ProjectNotFoundError" });
         return res.status(200).json({ project });
       });
   });
@@ -157,16 +157,16 @@ router.get('/:ORG_NAME/projects/:PROJECT_ID', (req, res) => {
 * @apiUse KeyNotFoundError
 * @apiUse KeyNotAuthorizedError
 */
-router.put('/:ORG_NAME/projects/:PROJECT_ID', (req, res) => {
+router.put("/:ORG_NAME/projects/:PROJECT_ID", (req, res) => {
   Organization.findOne({ username: req.params.ORG_NAME }, {}, { lean: true }, (err, org) => {
-    if (err || !org) return res.status(404).json({ error: 'OrganizationNotFoundError' });
+    if (err || !org) return res.status(404).json({ error: "OrganizationNotFoundError" });
     const orgKey = req.headers.authorization;
-    if (!orgKey) return res.status(403).json({ error: 'NoCredentialsSentError' });
-    if (orgKey !== org.organizationId) return res.status(401).json({ error: 'KeyNotAuthorizedError' });
+    if (!orgKey) return res.status(403).json({ error: "NoCredentialsSentError" });
+    if (orgKey !== org.organizationId) return res.status(401).json({ error: "KeyNotAuthorizedError" });
     return Project.findOneAndUpdate({ organization: org._id, projectId: req.params.PROJECT_ID }, { ...req.body, updatedAt: Date.now() },
       { new: true, lean: true }, (err2, project) => {
-        if (err2 || !project) return res.status(404).json({ error: 'ProjectNotFoundError' });
-        return res.status(200).json({ message: 'Project successfully updated!', project });
+        if (err2 || !project) return res.status(404).json({ error: "ProjectNotFoundError" });
+        return res.status(200).json({ message: "Project successfully updated!", project });
       });
   });
 });
@@ -194,15 +194,15 @@ router.put('/:ORG_NAME/projects/:PROJECT_ID', (req, res) => {
 * @apiUse KeyNotFoundError
 * @apiUse KeyNotAuthorizedError
 */
-router.delete('/:ORG_NAME/projects/:PROJECT_ID', (req, res) => {
+router.delete("/:ORG_NAME/projects/:PROJECT_ID", (req, res) => {
   Organization.findOne({ username: req.params.ORG_NAME }, {}, { lean: true }, (err, org) => {
-    if (err || !org) return res.status(404).json({ error: 'OrganizationNotFoundError' });
+    if (err || !org) return res.status(404).json({ error: "OrganizationNotFoundError" });
     const orgKey = req.headers.authorization;
-    if (!orgKey) return res.status(403).json({ error: 'NoCredentialsSentError' });
-    if (orgKey !== org.organizationId) return res.status(401).json({ error: 'KeyNotAuthorizedError' });
+    if (!orgKey) return res.status(403).json({ error: "NoCredentialsSentError" });
+    if (orgKey !== org.organizationId) return res.status(401).json({ error: "KeyNotAuthorizedError" });
     return Project.findOneAndDelete({ organization: org._id, projectId: req.params.PROJECT_ID }, { lean: true }, (err2, project) => {
-      if (err2 || !project) return res.status(404).json({ error: 'ProjectNotFoundError' });
-      return res.status(200).json({ message: 'Project successfully deleted!', project });
+      if (err2 || !project) return res.status(404).json({ error: "ProjectNotFoundError" });
+      return res.status(200).json({ message: "Project successfully deleted!", project });
     });
   });
 });

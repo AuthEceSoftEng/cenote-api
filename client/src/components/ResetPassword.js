@@ -1,11 +1,11 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
-import { identity } from 'ramda';
-import classNames from 'classnames';
+import React from "react";
+import PropTypes from "prop-types";
+import { connect } from "react-redux";
+import { identity } from "ramda";
+import classNames from "classnames";
 
-import { attemptResetPassword } from '../actions/organization';
-import { validatePassword } from '../utils/validation';
+import { attemptResetPassword } from "../actions/organization";
+import { validatePassword } from "../utils/validation";
 
 class ResetPassword extends React.Component {
   static propTypes = {
@@ -16,9 +16,9 @@ class ResetPassword extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      newPassword: '',
-      confirmPassword: '',
-      message: '',
+      newPassword: "",
+      confirmPassword: "",
+      message: "",
       valid: false,
     };
   }
@@ -42,7 +42,7 @@ class ResetPassword extends React.Component {
     const { attemptResetPassword: attemptresetPassword, token } = this.props;
     if (valid && newPassword === confirmPassword) {
       attemptresetPassword({ newPassword, token }).then(() => this.setState({
-        message: '',
+        message: "",
         valid: false,
       })).catch(identity);
     }
@@ -54,42 +54,42 @@ class ResetPassword extends React.Component {
 
     const newPasswordHelpClasses = classNames({
       help: true,
-      'is-danger': !valid,
-      'is-success': valid,
+      "is-danger": !valid,
+      "is-success": valid,
     });
 
     const newPasswordIconClasses = classNames({
       fa: true,
-      'fa-check': valid,
-      'is-success': valid,
-      'fa-warning': newPassword && !valid,
-      'is-danger': newPassword && !valid,
+      "fa-check": valid,
+      "is-success": valid,
+      "fa-warning": newPassword && !valid,
+      "is-danger": newPassword && !valid,
     });
 
     const newPasswordInputClasses = classNames({
       input: true,
-      'is-success': valid,
-      'is-danger': newPassword && !valid,
+      "is-success": valid,
+      "is-danger": newPassword && !valid,
     });
 
     const confirmPasswordIconClasses = classNames({
       fa: true,
-      'fa-check': confirmPassword && match,
-      'is-success': confirmPassword && match,
-      'fa-warning': confirmPassword && !match,
-      'is-danger': confirmPassword && !match,
+      "fa-check": confirmPassword && match,
+      "is-success": confirmPassword && match,
+      "fa-warning": confirmPassword && !match,
+      "is-danger": confirmPassword && !match,
     });
 
     const confirmPasswordInputClasses = classNames({
       input: true,
-      'is-success': confirmPassword && match,
-      'is-danger': confirmPassword && !match,
+      "is-success": confirmPassword && match,
+      "is-danger": confirmPassword && !match,
     });
 
     const confirmPasswordHelpClasses = classNames({
       help: true,
-      'is-success': match,
-      'is-danger': !match,
+      "is-success": match,
+      "is-danger": !match,
     });
 
     return (
@@ -99,7 +99,7 @@ class ResetPassword extends React.Component {
         <div className="field has-help">
           <p className="control has-icons-right">
             <label htmlFor="new-password" className="label">
-              {'New Password'}
+              New Password
               <input
                 id="new-password"
                 className={newPasswordInputClasses}
@@ -123,7 +123,7 @@ class ResetPassword extends React.Component {
         <div className="field has-help">
           <p className="control has-icons-right">
             <label htmlFor="confirm-password" className="label">
-              {'Confirm Password'}
+              Confirm Password
               <input
                 id="confirm-password"
                 className={confirmPasswordInputClasses}
@@ -139,7 +139,7 @@ class ResetPassword extends React.Component {
           </p>
           {confirmPassword && (
             <p className={confirmPasswordHelpClasses}>
-              {match ? 'Passwords match!' : 'Passwords must match!'}
+              {match ? "Passwords match!" : "Passwords must match!"}
             </p>
           )}
         </div>
@@ -151,7 +151,7 @@ class ResetPassword extends React.Component {
           onClick={this.save}
           disabled={!match || !valid}
         >
-          {'Reset Password'}
+          Reset Password
         </button>
       </div>
     );

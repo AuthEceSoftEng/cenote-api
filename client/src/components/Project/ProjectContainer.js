@@ -1,8 +1,8 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import { distanceInWordsToNow } from 'date-fns';
+import React, { Component } from "react";
+import PropTypes from "prop-types";
+import { distanceInWordsToNow } from "date-fns";
 
-import Project from './Project';
+import Project from "./Project";
 
 export default class ProjectContainer extends Component {
   static propTypes = {
@@ -17,15 +17,15 @@ export default class ProjectContainer extends Component {
     organization: PropTypes.object.isRequired,
   };
 
-  static defaultProps = { updatedAt: undefined, projectId: '', createdAt: '' };
+  static defaultProps = { updatedAt: undefined, projectId: "", createdAt: "" };
 
   constructor(props) {
     super(props);
     this.state = {
       title: props.title,
       edit: false,
-      updatedMessage: '',
-      createdMessage: '',
+      updatedMessage: "",
+      createdMessage: "",
     };
   }
 
@@ -34,17 +34,13 @@ export default class ProjectContainer extends Component {
     this.interval = window.setInterval(this.updateMessages, 1000 * 60);
   }
 
-  componentWillReceiveProps(nextProps) {
-    this.setState({ updatedMessage: this.fromNow(nextProps.updatedAt) });
-  }
-
   componentWillUnmount() {
     clearInterval(this.interval);
   }
 
   updateMessages = () => {
     const { updatedAt, createdAt } = this.props;
-    this.setState({ updatedMessage: updatedAt ? this.fromNow(updatedAt) : '', createdMessage: this.fromNow(createdAt) });
+    this.setState({ updatedMessage: updatedAt ? this.fromNow(updatedAt) : "", createdMessage: this.fromNow(createdAt) });
   }
 
   fromNow = date => distanceInWordsToNow(date, { addSuffix: true })
@@ -74,6 +70,11 @@ export default class ProjectContainer extends Component {
     if (title) {
       updateProjectTitle({ projectId, title }).then(() => this.setState({ edit: false }));
     }
+  }
+
+  /* eslint-disable camelcase */
+  UNSAFE_componentWillReceiveProps(nextProps) {
+    this.setState({ updatedMessage: this.fromNow(nextProps.updatedAt) });
   }
 
   render() {

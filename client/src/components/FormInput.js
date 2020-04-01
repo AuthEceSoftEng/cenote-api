@@ -1,8 +1,8 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import classNames from 'classnames';
+import React from "react";
+import PropTypes from "prop-types";
+import classNames from "classnames";
 
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 export default function FormInput(props) {
   const { className, onChange, value, placeholder, type, leftIcon, rightIcon } = props;
@@ -14,13 +14,13 @@ export default function FormInput(props) {
 
   const controlClasses = classNames({
     control: true,
-    'has-icons-left': !!leftIcon,
-    'has-icons-right': !!rightIcon,
+    "has-icons-left": !!leftIcon,
+    "has-icons-right": !!rightIcon,
   });
 
   return (
     <div className={fieldClasses}>
-      <p className={controlClasses} style={{ borderRadius: '15px' }}>
+      <p className={controlClasses} style={{ borderRadius: "15px" }}>
         <input
           className="input"
           type={type}
@@ -28,19 +28,19 @@ export default function FormInput(props) {
           onChange={onChange}
           value={value}
           style={{
-            borderTopRightRadius: '.5rem',
-            borderBottomRightRadius: '.5rem',
-            borderColor: '#00A09E',
-            borderWidth: '1px',
-            paddingLeft: '3rem',
-            fontSize: '1.3rem',
-            color: '#00A09E',
+            borderTopRightRadius: ".5rem",
+            borderBottomRightRadius: ".5rem",
+            borderColor: "#00A09E",
+            borderWidth: "1px",
+            paddingLeft: "3rem",
+            fontSize: "1.3rem",
+            color: "#00A09E",
           }}
         />
         {leftIcon && (
           <span
             className="icon is-left"
-            style={{ backgroundColor: '#00A09E', borderTopLeftRadius: '.5rem', borderBottomLeftRadius: '.5rem', height: '2.9rem' }}
+            style={{ backgroundColor: "#00A09E", borderTopLeftRadius: ".5rem", borderBottomLeftRadius: ".5rem", height: "2.9rem" }}
           >
             <FontAwesomeIcon icon={leftIcon} />
           </span>
@@ -56,10 +56,10 @@ export default function FormInput(props) {
 }
 
 FormInput.defaultProps = {
-  className: '',
+  className: "",
   leftIcon: undefined,
   rightIcon: undefined,
-  type: 'text',
+  type: "text",
 };
 
 FormInput.propTypes = {

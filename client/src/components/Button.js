@@ -1,6 +1,6 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import classNames from 'classnames';
+import React from "react";
+import PropTypes from "prop-types";
+import classNames from "classnames";
 
 const Button = (props) => {
   const {
@@ -22,41 +22,41 @@ const Button = (props) => {
   } = props;
 
   const typeMap = {
-    info: 'is-info',
-    primary: 'is-primary',
-    success: 'is-success',
-    warning: 'is-warning',
-    danger: 'is-danger',
+    info: "is-info",
+    primary: "is-primary",
+    success: "is-success",
+    warning: "is-warning",
+    danger: "is-danger",
   };
 
   const sizeMap = {
-    small: 'is-small',
-    normal: '',
-    medium: 'is-medium',
-    large: 'is-large',
+    small: "is-small",
+    normal: "",
+    medium: "is-medium",
+    large: "is-large",
   };
 
-  const isType = typeMap[type] || 'is-info';
-  const isSize = sizeMap[size] || '';
+  const isType = typeMap[type] || "is-info";
+  const isSize = sizeMap[size] || "";
 
   const buttonClasses = classNames({
     [className]: !!className,
     button: true,
     [isType]: true,
     [isSize]: true,
-    'is-outlined': outlined,
-    'is-inverted': inverted,
-    'is-rounded': rounded,
-    'is-hovered': hovered,
-    'is-focused': focused,
-    'is-active': active,
-    'is-loading': loading,
-    'is-static': sstatic,
+    "is-outlined": outlined,
+    "is-inverted": inverted,
+    "is-rounded": rounded,
+    "is-hovered": hovered,
+    "is-focused": focused,
+    "is-active": active,
+    "is-loading": loading,
+    "is-static": sstatic,
   });
 
   return (
     <button
-      style={{ ...style, backgroundColor: '#00A09E' }}
+      style={{ ...style, backgroundColor: "#00A09E" }}
       type="button"
       className={buttonClasses}
       onClick={onClick}
@@ -86,11 +86,11 @@ Button.propTypes = {
 };
 
 Button.defaultProps = {
-  className: '',
-  style: { margin: '10px' },
-  label: '',
-  type: 'info',
-  size: 'normal',
+  className: "",
+  style: { margin: "10px" },
+  label: "",
+  type: "info",
+  size: "normal",
   onClick: () => {},
   outlined: false,
   inverted: false,

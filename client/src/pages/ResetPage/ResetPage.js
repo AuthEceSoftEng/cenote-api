@@ -1,8 +1,8 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
+import React from "react";
+import PropTypes from "prop-types";
+import { connect } from "react-redux";
 
-import { ResetPassword } from '../../components';
+import { ResetPassword } from "../../components";
 
 const ResetPage = (props) => {
   const { match } = props;

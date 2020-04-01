@@ -1,13 +1,13 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
-import { faEnvelope } from '@fortawesome/free-solid-svg-icons';
-import { identity } from 'ramda';
-import classNames from 'classnames';
+import React from "react";
+import PropTypes from "prop-types";
+import { connect } from "react-redux";
+import { faEnvelope } from "@fortawesome/free-solid-svg-icons";
+import { identity } from "ramda";
+import classNames from "classnames";
 
-import { attemptReset } from '../../actions/organization';
-import { Box, FormInput } from '../../components';
-import { validateEmail } from '../../utils/validation';
+import { attemptReset } from "../../actions/organization";
+import { Box, FormInput } from "../../components";
+import { validateEmail } from "../../utils/validation";
 
 class RecoveryPage extends React.Component {
   static propTypes = { attemptReset: PropTypes.func.isRequired };
@@ -15,23 +15,23 @@ class RecoveryPage extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      email: '',
-      message: '',
+      email: "",
+      message: "",
       valid: false,
     };
     this.reset = this.reset.bind(this);
   }
 
   componentDidMount() {
-    window.addEventListener('keypress', this.handleKeyPress);
+    window.addEventListener("keypress", this.handleKeyPress);
   }
 
   componentWillUnmount() {
-    window.removeEventListener('keypress', this.handleKeyPress);
+    window.removeEventListener("keypress", this.handleKeyPress);
   }
 
   handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       this.reset();
     }
   }
@@ -54,13 +54,13 @@ class RecoveryPage extends React.Component {
 
   render() {
     const { email, message, valid } = this.state;
-    const emailHelpClasses = classNames({ help: true, 'is-danger': !valid, 'is-success': valid });
+    const emailHelpClasses = classNames({ help: true, "is-danger": !valid, "is-success": valid });
     const emailIconClasses = classNames({
       fa: true,
-      'fa-check': valid,
-      'is-success': valid,
-      'fa-warning': email && !valid,
-      'is-danger': email && !valid,
+      "fa-check": valid,
+      "is-success": valid,
+      "fa-warning": email && !valid,
+      "is-danger": email && !valid,
     });
 
     return (
@@ -71,7 +71,7 @@ class RecoveryPage extends React.Component {
           <div className="field has-help">
             <div className="control has-icons-right">
               <label htmlFor="email" className="label">
-                {'Email'}
+                Email
                 <FormInput
                   id="email"
                   type="email"

@@ -1,11 +1,11 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
-import { push } from 'connected-react-router';
-import { isEmpty, pick } from 'ramda';
+import React from "react";
+import PropTypes from "prop-types";
+import { connect } from "react-redux";
+import { push } from "connected-react-router";
+import { isEmpty, pick } from "ramda";
 
-import { attemptGetProjects } from '../../actions/projects';
-import { AddProject, ProjectList } from '../../components';
+import { attemptGetProjects } from "../../actions/projects";
+import { AddProject, ProjectList } from "../../components";
 
 class ProjectPageContainer extends React.Component {
   static propTypes = {
@@ -32,7 +32,7 @@ class ProjectPageContainer extends React.Component {
             <AddProject />
           </div>
         </div>
-        <div className="columns" style={{ marginBottom: '3rem' }}>
+        <div className="columns" style={{ marginBottom: "3rem" }}>
           <div className="column is-2" />
           <div className="column is-8 text-center">
             <ProjectList />
@@ -44,9 +44,9 @@ class ProjectPageContainer extends React.Component {
   }
 }
 
-const mapStateToProps = pick(['organization']);
+const mapStateToProps = pick(["organization"]);
 const mapDispatchToProps = dispatch => ({
-  pushToLogin: () => dispatch(push('/login')),
+  pushToLogin: () => dispatch(push("/login")),
   getProjects: () => dispatch(attemptGetProjects()),
 });
 

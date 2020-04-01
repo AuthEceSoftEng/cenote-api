@@ -1,4 +1,4 @@
-import request from 'superagent';
+import request from "superagent";
 
 export default async (projectId, col, readKey) => {
   try {

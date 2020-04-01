@@ -1,14 +1,14 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
-import { Link } from 'react-router-dom';
-import { identity } from 'ramda';
-import classNames from 'classnames';
+import React from "react";
+import PropTypes from "prop-types";
+import { connect } from "react-redux";
+import { Link } from "react-router-dom";
+import { identity } from "ramda";
+import classNames from "classnames";
 
-import { attemptRegister } from '../../actions/organization';
-import { postCheckUsername, postCheckEmail } from '../../api/organization';
-import { validatePassword, validateUsername, validateEmail } from '../../utils/validation';
-import { Box, Button } from '../../components';
+import { attemptRegister } from "../../actions/organization";
+import { postCheckUsername, postCheckEmail } from "../../api/organization";
+import { validatePassword, validateUsername, validateEmail } from "../../utils/validation";
+import { Box, Button } from "../../components";
 
 class RegisterPage extends React.Component {
   static propTypes = { attemptRegister: PropTypes.func.isRequired };
@@ -16,12 +16,12 @@ class RegisterPage extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      username: '',
-      usernameMessage: '',
-      email: '',
-      emailMessage: '',
-      password: '',
-      passwordMessage: '',
+      username: "",
+      usernameMessage: "",
+      email: "",
+      emailMessage: "",
+      password: "",
+      passwordMessage: "",
       emailAvailable: false,
       usernameAvailable: false,
       passwordValid: false,
@@ -29,15 +29,15 @@ class RegisterPage extends React.Component {
   }
 
   componentDidMount() {
-    window.addEventListener('keypress', this.handleKeyPress);
+    window.addEventListener("keypress", this.handleKeyPress);
   }
 
   componentWillUnmount() {
-    window.removeEventListener('keypress', this.handleKeyPress);
+    window.removeEventListener("keypress", this.handleKeyPress);
   }
 
   handleKeyPress = (e) => {
-    if (e.key === 'Enter') this.register();
+    if (e.key === "Enter") this.register();
   }
 
   updateUsername = (username) => {
@@ -70,7 +70,7 @@ class RegisterPage extends React.Component {
     const { valid, message } = validateUsername(username);
 
     if (valid) {
-      this.setState({ usernameMessage: 'Checking username...', usernameAvailable: false },
+      this.setState({ usernameMessage: "Checking username...", usernameAvailable: false },
         () => postCheckUsername(username)
           .then(res => this.setState({
             usernameAvailable: res.available,
@@ -86,7 +86,7 @@ class RegisterPage extends React.Component {
     const { valid, message } = validateEmail(email);
 
     if (valid) {
-      this.setState({ emailMessage: 'Checking email...', emailAvailable: false },
+      this.setState({ emailMessage: "Checking email...", emailAvailable: false },
         () => postCheckEmail(email)
           .then(res => this.setState({
             emailAvailable: res.available,
@@ -127,46 +127,46 @@ class RegisterPage extends React.Component {
     } = this.state;
     const usernameIconClasses = classNames({
       fa: true,
-      'fa-check': usernameAvailable,
-      'fa-warning': username && !usernameAvailable,
-      'is-success': usernameAvailable,
-      'is-danger': username && !usernameAvailable,
+      "fa-check": usernameAvailable,
+      "fa-warning": username && !usernameAvailable,
+      "is-success": usernameAvailable,
+      "is-danger": username && !usernameAvailable,
     });
-    const usernameInputClasses = classNames({ input: true, 'is-success': usernameAvailable, 'is-danger': username && !usernameAvailable });
-    const usernameHelpClasses = classNames({ help: true, 'is-success': usernameAvailable, 'is-danger': username && !usernameAvailable });
+    const usernameInputClasses = classNames({ input: true, "is-success": usernameAvailable, "is-danger": username && !usernameAvailable });
+    const usernameHelpClasses = classNames({ help: true, "is-success": usernameAvailable, "is-danger": username && !usernameAvailable });
 
     const emailIconClasses = classNames({
       fa: true,
-      'fa-check': emailAvailable,
-      'fa-warning': email && !emailAvailable,
-      'is-success': emailAvailable,
-      'is-danger': email && !emailAvailable,
+      "fa-check": emailAvailable,
+      "fa-warning": email && !emailAvailable,
+      "is-success": emailAvailable,
+      "is-danger": email && !emailAvailable,
     });
-    const emailInputClasses = classNames({ input: true, 'is-success': emailAvailable, 'is-danger': email && !emailAvailable });
-    const emailHelpClasses = classNames({ help: true, 'is-success': emailAvailable, 'is-danger': email && !emailAvailable });
+    const emailInputClasses = classNames({ input: true, "is-success": emailAvailable, "is-danger": email && !emailAvailable });
+    const emailHelpClasses = classNames({ help: true, "is-success": emailAvailable, "is-danger": email && !emailAvailable });
 
     const passwordIconClasses = classNames({
       fa: true,
-      'fa-check': passwordValid,
-      'fa-warning': password && !passwordValid,
-      'is-success': passwordValid,
-      'is-danger': password && !passwordValid,
+      "fa-check": passwordValid,
+      "fa-warning": password && !passwordValid,
+      "is-success": passwordValid,
+      "is-danger": password && !passwordValid,
     });
-    const passwordInputClasses = classNames({ input: true, 'is-success': passwordValid, 'is-danger': password && !passwordValid });
-    const passwordHelpClasses = classNames({ help: true, 'is-success': passwordValid, 'is-danger': password && !passwordValid });
+    const passwordInputClasses = classNames({ input: true, "is-success": passwordValid, "is-danger": password && !passwordValid });
+    const passwordHelpClasses = classNames({ help: true, "is-success": passwordValid, "is-danger": password && !passwordValid });
 
     return (
       <Box className="register">
         <h3 className="title is-3">Sign Up</h3>
         <hr className="separator" />
         <p className="has-space-below">
-          {'Already a member? '}
+          {"Already a member? "}
           <Link to="/login">Login</Link>
         </p>
         <div className="field">
           <p className="control has-icons-right">
             <label htmlFor="email" className="label">
-              {'Email'}
+              Email
               <input
                 id="email"
                 className={emailInputClasses}
@@ -189,7 +189,7 @@ class RegisterPage extends React.Component {
         <div className="field">
           <p className="control has-icons-right">
             <label htmlFor="username" className="label">
-              {'Username'}
+              Username
               <input
                 id="username"
                 className={usernameInputClasses}
@@ -212,7 +212,7 @@ class RegisterPage extends React.Component {
         <div className="field">
           <p className="control has-icons-right">
             <label htmlFor="password" className="label">
-              {'Password'}
+              Password
               <input
                 id="password"
                 className={passwordInputClasses}

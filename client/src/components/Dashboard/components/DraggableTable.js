@@ -1,6 +1,6 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import ReactTable from 'react-table';
+import React, { Component } from "react";
+import PropTypes from "prop-types";
+import ReactTable from "react-table";
 
 export default class DraggableTable extends Component {
   static propTypes = { data: PropTypes.array.isRequired, columns: PropTypes.array.isRequired }
@@ -21,10 +21,10 @@ export default class DraggableTable extends Component {
   }
 
   mountEvents() {
-    const headers = Array.prototype.slice.call(document.querySelectorAll('.draggable-header'));
+    const headers = Array.prototype.slice.call(document.querySelectorAll(".draggable-header"));
 
     headers.forEach((header, i) => {
-      header.setAttribute('draggable', true);
+      header.setAttribute("draggable", true);
       header.ondragstart = (e) => {
         e.stopPropagation();
         this.dragged = i;

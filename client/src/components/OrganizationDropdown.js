@@ -1,10 +1,10 @@
-import React, { Component } from 'react';
-import { connect } from 'react-redux';
-import PropTypes from 'prop-types';
-import { Link } from 'react-router-dom';
-import { identity, pick } from 'ramda';
+import React, { Component } from "react";
+import { connect } from "react-redux";
+import PropTypes from "prop-types";
+import { Link } from "react-router-dom";
+import { identity, pick } from "ramda";
 
-import { attemptLogout } from '../actions/organization';
+import { attemptLogout } from "../actions/organization";
 
 class OrganizationDropdown extends Component {
   static propTypes = {
@@ -20,15 +20,16 @@ class OrganizationDropdown extends Component {
     this.close = this.close.bind(this);
   }
 
-  componentWillReceiveProps(nextProps) {
-    this.setState({ open: nextProps.open });
-  }
-
   logout = () => {
     const { closeDropdown, attemptLogout: attemptlogout } = this.props;
     this.setState({ open: false });
     closeDropdown();
     attemptlogout().catch(identity);
+  }
+
+  /* eslint-disable camelcase */
+  UNSAFE_componentWillReceiveProps(nextProps) {
+    this.setState({ open: nextProps.open });
   }
 
   close() {
@@ -62,7 +63,7 @@ class OrganizationDropdown extends Component {
               onClick={this.logout}
               type="button"
               onKeyPress={this.logout}
-              style={{ backgroundColor: '#00A09E', color: 'white' }}
+              style={{ backgroundColor: "#00A09E", color: "white" }}
             >
               Logout
             </button>
@@ -73,6 +74,6 @@ class OrganizationDropdown extends Component {
   }
 }
 
-const mapStateToProps = pick(['organization']);
+const mapStateToProps = pick(["organization"]);
 const mapDispatchToProps = dispatch => ({ attemptLogout: () => dispatch(attemptLogout()) });
 export default connect(mapStateToProps, mapDispatchToProps)(OrganizationDropdown);

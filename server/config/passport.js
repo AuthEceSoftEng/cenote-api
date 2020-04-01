@@ -1,23 +1,23 @@
-require('dotenv').config();
-const passport = require('passport');
-const session = require('express-session');
-const MongoStore = require('connect-mongodb-session')(session);
-const uuid = require('uuid');
-const mongoose = require('mongoose');
+require("dotenv").config();
+const passport = require("passport");
+const session = require("express-session");
+const MongoStore = require("connect-mongodb-session")(session);
+const uuid = require("uuid");
+const mongoose = require("mongoose");
 
-const Strategies = require('./strategies');
-const { Organization } = require('../models');
+const Strategies = require("./strategies");
+const { Organization } = require("../models");
 
 module.exports = (app) => {
   const sessionConfig = {
     store: new MongoStore({
       mongooseConnection: mongoose.connection,
-      collection: 'sessions',
+      collection: "sessions",
       uri: process.env.DATABASE_STORE,
     }),
     genid: () => uuid.v4(),
     cookie: { secure: false },
-    secret: process.env.COOKIE_SECRET || 'cenote-secret',
+    secret: process.env.COOKIE_SECRET || "cenote-secret",
     resave: false,
     saveUninitialized: false,
   };

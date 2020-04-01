@@ -1,7 +1,7 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import { isEmpty, equals } from 'ramda';
-import Navigation from './Navigation';
+import React, { Component } from "react";
+import PropTypes from "prop-types";
+import { isEmpty, equals } from "ramda";
+import Navigation from "./Navigation";
 
 export default class NavigationContainer extends Component {
   static propTypes = {
@@ -18,18 +18,19 @@ export default class NavigationContainer extends Component {
     };
   }
 
-  componentWillReceiveProps(nextProps) {
-    const { organization } = this.props;
-    if (!equals(nextProps.organization, organization)) {
-      this.setState({ auth: !isEmpty(nextProps.organization) });
-    }
-  }
-
   toggleDropdown = () => this.setState(prevState => ({ dropdownOpen: !prevState.dropdownOpen, opening: true }))
 
   closeDropdown = () => {
     const { opening } = this.state;
     return opening ? this.setState({ opening: false, dropdownOpen: false }) : this.setState({ dropdownOpen: false });
+  }
+
+  /* eslint-disable camelcase */
+  UNSAFE_componentWillReceiveProps(nextProps) {
+    const { organization } = this.props;
+    if (!equals(nextProps.organization, organization)) {
+      this.setState({ auth: !isEmpty(nextProps.organization) });
+    }
   }
 
   render() {

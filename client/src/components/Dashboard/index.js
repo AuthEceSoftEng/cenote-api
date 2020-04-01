@@ -1,7 +1,7 @@
-import { connect } from 'react-redux';
+import { connect } from "react-redux";
 
-import { attemptUpdateProjectReadKey, attemptUpdateProjectWriteKey, attemptUpdateProjectMasterKey } from '../../actions/projects';
-import Dashboard from './Dashboard';
+import { attemptUpdateProjectReadKey, attemptUpdateProjectWriteKey, attemptUpdateProjectMasterKey } from "../../actions/projects";
+import Dashboard from "./Dashboard";
 
 
 const mapDispatchToProps = dispatch => ({

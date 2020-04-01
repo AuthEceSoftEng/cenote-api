@@ -1,1 +1,1 @@
-export { default } from './RegisterPageContainer';
+export { default } from "./RegisterPageContainer";

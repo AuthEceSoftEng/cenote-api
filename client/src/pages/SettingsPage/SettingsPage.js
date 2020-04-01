@@ -1,10 +1,10 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { Switch, Route } from 'react-router';
+import React from "react";
+import PropTypes from "prop-types";
+import { Switch, Route } from "react-router";
 
-import SettingsMenu from './SettingsMenu';
-import ProfileSettings from './ProfileSettings';
-import AccountSettings from './AccountSettings';
+import SettingsMenu from "./SettingsMenu";
+import ProfileSettings from "./ProfileSettings";
+import AccountSettings from "./AccountSettings";
 
 export default function SettingsPage(props) {
   const { location } = props;

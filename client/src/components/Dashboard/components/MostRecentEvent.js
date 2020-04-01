@@ -1,19 +1,19 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { ClipLoader } from 'react-spinners';
-import * as moment from 'moment';
+import React from "react";
+import PropTypes from "prop-types";
+import { ClipLoader } from "react-spinners";
+import * as moment from "moment";
 
 const MostRecentEvents = (props) => {
   const { properties, events } = props;
   return (
-    <div className="container is-fluid" style={{ display: 'block', overflowX: 'auto', whiteSpace: 'nowrap' }}>
+    <div className="container is-fluid" style={{ display: "block", overflowX: "auto", whiteSpace: "nowrap" }}>
       {
         Object.keys(events).length
           ? (
             <table
               className="table has-text-centered"
               align="center"
-              style={{ borderCollapse: 'collapse', borderRadius: '1rem', overflow: 'hidden' }}
+              style={{ borderCollapse: "collapse", borderRadius: "1rem", overflow: "hidden" }}
             >
               <thead>
                 <tr>
@@ -35,11 +35,11 @@ const MostRecentEvents = (props) => {
                           <td
                             key={`td_key_${ind2}`}
                             className={`has-text-centered ${
-                              prop2.column_name.startsWith('cenote') || prop2.column_name.startsWith('uuid') ? 'has-text-danger' : 'has-text-info'}`}
+                              prop2.column_name.startsWith("cenote") || prop2.column_name.startsWith("uuid") ? "has-text-danger" : "has-text-info"}`}
                           >
-                            {prop[prop2.column_name] !== null ? ['cenote$created_at', 'cenote$timestamp'].includes(prop2.column_name)
-                              ? moment(prop[prop2.column_name]).format('LTS, DD/MM/YYYY')
-                              : prop[prop2.column_name] : '-'}
+                            {prop[prop2.column_name] !== null ? ["cenote$created_at", "cenote$timestamp"].includes(prop2.column_name)
+                              ? moment(prop[prop2.column_name]).format("LTS, DD/MM/YYYY")
+                              : prop[prop2.column_name] : "-"}
                           </td>
                         ))
                       }

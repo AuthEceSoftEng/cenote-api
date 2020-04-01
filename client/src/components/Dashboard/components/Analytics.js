@@ -1,16 +1,16 @@
 /* eslint-disable jsx-a11y/label-has-associated-control, no-bitwise */
-import React from 'react';
-import PropTypes from 'prop-types';
-import Select from 'react-select';
-import { ClipLoader } from 'react-spinners';
-import * as moment from 'moment';
-import DatePicker from 'react-datepicker';
-import mem from 'mem';
-import DownloadLink from 'react-download-link';
-import { parse } from 'json2csv';
+import React from "react";
+import PropTypes from "prop-types";
+import Select from "react-select";
+import { ClipLoader } from "react-spinners";
+import * as moment from "moment";
+import DatePicker from "react-datepicker";
+import mem from "mem";
+import DownloadLink from "react-download-link";
+import { parse } from "json2csv";
 
-import { getRecentEvents } from '../utils';
-import { DraggableTable } from '.';
+import { getRecentEvents } from "../utils";
+import { DraggableTable } from ".";
 
 const getRecentEventsAndCache = mem(getRecentEvents);
 
@@ -32,15 +32,15 @@ export default class Analytics extends React.Component {
       collections: props.collections,
       loading: false,
       columns: [],
-      selectedCollection: { value: '---', label: '---' },
+      selectedCollection: { value: "---", label: "---" },
       selectedColumns: [],
-      selectedInterval: { value: 'this_year', label: 'this year' },
+      selectedInterval: { value: "this_year", label: "this year" },
       tableData: {
         events: null,
         properties: null,
       },
-      startDate: moment().startOf('hour').toDate(),
-      endDate: moment().subtract(1, 'week').startOf('hour').toDate(),
+      startDate: moment().startOf("hour").toDate(),
+      endDate: moment().subtract(1, "week").startOf("hour").toDate(),
     };
     this.input = React.createRef();
     this.getEvents = this.getEvents.bind(this);
@@ -53,10 +53,6 @@ export default class Analytics extends React.Component {
     this.dragTable = null;
   }
 
-  componentWillReceiveProps(nextProps) {
-    this.setState({ collections: nextProps.collections });
-  }
-
   getEvents() {
     const {
       selectedCollection: { value: collection },
@@ -67,19 +63,19 @@ export default class Analytics extends React.Component {
       endDate,
     } = this.state;
     const { projectId, readKey } = this.props;
-    if (collection === '---') return;
+    if (collection === "---") return;
     this.setState({ loading: true });
     getRecentEventsAndCache(projectId, collection, readKey, parseInt(this.input.current.value || 2e3, 10)).then((tableData) => {
-      if (interval === 'custom_timeframe') {
+      if (interval === "custom_timeframe") {
         tableData.events = tableData.filter(el => moment(el.cenote$timestamp).isBetween(endDate, startDate));
       } else {
         tableData.events = tableData.filter((el) => {
           let filterClause = moment(el.cenote$timestamp).year() === moment().year();
-          if (interval === 'this_year') return filterClause;
+          if (interval === "this_year") return filterClause;
           filterClause &= moment(el.cenote$timestamp).month() === moment().month();
-          if (interval === 'this_month') return filterClause;
+          if (interval === "this_month") return filterClause;
           filterClause &= moment(el.cenote$timestamp).isoWeek() === moment().isoWeek();
-          if (interval === 'this_week') return filterClause;
+          if (interval === "this_week") return filterClause;
           filterClause &= moment(el.cenote$timestamp).dayOfYear() === moment().dayOfYear();
           return filterClause;
         });
@@ -126,14 +122,19 @@ export default class Analytics extends React.Component {
     this.setState({ endDate }, this.getEvents);
   }
 
+  /* eslint-disable camelcase */
+  UNSAFE_componentWillReceiveProps(nextProps) {
+    this.setState({ collections: nextProps.collections });
+  }
+
   downloadData() {
-    if (get(this.dragTable, 'reactTable.getResolvedState')) {
+    if (get(this.dragTable, "reactTable.getResolvedState")) {
       return parse(this.dragTable.reactTable.getResolvedState().sortedData.map((e) => {
         const { _original, _index, _subRows, _nestingLevel, ...data } = e;
         return data;
       }));
     }
-    return get(this.state, 'tableData.events.data');
+    return get(this.state, "tableData.events.data");
   }
 
   render() {
@@ -142,13 +143,13 @@ export default class Analytics extends React.Component {
     const collectionNames = Object.keys(collections);
     return (
       <div>
-        <div className="field is-horizontal" style={{ justifyContent: 'center', alignItems: 'inherit' }}>
-          <div className="field is-horizontal" style={{ flex: 1, alignItems: 'center' }}>
+        <div className="field is-horizontal" style={{ justifyContent: "center", alignItems: "inherit" }}>
+          <div className="field is-horizontal" style={{ flex: 1, alignItems: "center" }}>
             <div className="field-label is-normal">
               <label className="label">From collection:</label>
             </div>
             <div className="field-body">
-              <div style={{ width: '100%', height: '80%' }}>
+              <div style={{ width: "100%", height: "80%" }}>
                 <Select
                   value={selectedCollection}
                   onChange={this.handleCollectionChange}
@@ -158,12 +159,12 @@ export default class Analytics extends React.Component {
               </div>
             </div>
           </div>
-          <div className="field is-horizontal" style={{ flex: 1, alignItems: 'center' }}>
+          <div className="field is-horizontal" style={{ flex: 1, alignItems: "center" }}>
             <div className="field-label is-normal">
               <label className="label">fetch column:</label>
             </div>
             <div className="field-body">
-              <div style={{ width: '100%', height: '80%' }}>
+              <div style={{ width: "100%", height: "80%" }}>
                 <Select
                   isMulti
                   value={selectedColumns}
@@ -174,29 +175,29 @@ export default class Analytics extends React.Component {
               </div>
             </div>
           </div>
-          <div className="field is-horizontal" style={{ flex: 1, alignItems: 'center' }}>
+          <div className="field is-horizontal" style={{ flex: 1, alignItems: "center" }}>
             <div className="field-label is-normal">
               <label className="label">get latest:</label>
             </div>
             <div className="field-body">
-              <input className="input is-normal" type="text" placeholder="2000" style={{ minHeight: '2.7rem' }} ref={this.input} />
+              <input className="input is-normal" type="text" placeholder="2000" style={{ minHeight: "2.7rem" }} ref={this.input} />
             </div>
           </div>
-          <div className="field is-horizontal" style={{ flex: 1, alignItems: 'center' }}>
+          <div className="field is-horizontal" style={{ flex: 1, alignItems: "center" }}>
             <div className="field-label is-normal">
               <label className="label">only from:</label>
             </div>
             <div className="field-body is-normal">
-              <div style={{ width: '100%', height: '80%' }}>
+              <div style={{ width: "100%", height: "80%" }}>
                 <Select
                   value={selectedInterval}
                   onChange={this.handleIntervalChange}
                   options={[
-                    { value: 'this_year', label: 'this year' },
-                    { value: 'this_month', label: 'this month' },
-                    { value: 'this_week', label: 'this week' },
-                    { value: 'this_day', label: 'this day' },
-                    { value: 'custom_timeframe', label: 'custom timeframe' },
+                    { value: "this_year", label: "this year" },
+                    { value: "this_month", label: "this month" },
+                    { value: "this_week", label: "this week" },
+                    { value: "this_day", label: "this day" },
+                    { value: "custom_timeframe", label: "custom timeframe" },
                   ]}
                   placeholder="this_year"
                   defaultValue="this_year"
@@ -204,7 +205,7 @@ export default class Analytics extends React.Component {
               </div>
             </div>
           </div>
-          <div className="control" style={{ marginLeft: '1rem' }}>
+          <div className="control" style={{ marginLeft: "1rem" }}>
             <button
               type="submit"
               className="button is-info"
@@ -212,18 +213,18 @@ export default class Analytics extends React.Component {
                 mem.clear(getRecentEventsAndCache);
                 this.getEvents();
               }}
-              style={{ backgroundColor: '#00A09E', color: 'white', border: '2px solid #10447a', borderRadius: '5px' }}
+              style={{ backgroundColor: "#00A09E", color: "white", border: "2px solid #10447a", borderRadius: "5px" }}
             >
-            Refresh!
+              Refresh!
             </button>
           </div>
-          <div className="control" style={{ marginLeft: '1rem' }}>
+          <div className="control" style={{ marginLeft: "1rem" }}>
             {
-              selectedCollection.value !== '---' && (
+              selectedCollection.value !== "---" && (
               <DownloadLink
                 className="button is-primary"
                 filename={`${projectId}_${selectedCollection.value}_${selectedColumns.length
-                  ? selectedColumns.map(el => el.value).join(',') : 'all'}.csv`}
+                  ? selectedColumns.map(el => el.value).join(",") : "all"}.csv`}
                 exportFile={this.downloadData}
                 tagName="button"
                 label="Export to CSV!"
@@ -234,14 +235,14 @@ export default class Analytics extends React.Component {
           </div>
         </div>
         {
-          selectedInterval.value === 'custom_timeframe' && (
-          <div className="field is-horizontal" style={{ justifyContent: 'center', alignItems: 'inherit' }}>
-            <div className="field is-horizontal" style={{ marginHorizontal: '1rem' }}>
-              <div className="field-label is-normal" style={{ marginRight: 'unset' }}>
+          selectedInterval.value === "custom_timeframe" && (
+          <div className="field is-horizontal" style={{ justifyContent: "center", alignItems: "inherit" }}>
+            <div className="field is-horizontal" style={{ marginHorizontal: "1rem" }}>
+              <div className="field-label is-normal" style={{ marginRight: "unset" }}>
                 <label className="label">From: </label>
               </div>
               <div className="field-body is-normal">
-                <div style={{ width: '100%', height: '80%' }}>
+                <div style={{ width: "100%", height: "80%" }}>
                   <DatePicker
                     selected={endDate}
                     showTimeSelect
@@ -255,12 +256,12 @@ export default class Analytics extends React.Component {
                 </div>
               </div>
             </div>
-            <div className="field is-horizontal" style={{ marginHorizontal: '1rem' }}>
-              <div className="field-label is-normal" style={{ marginRight: 'unset' }}>
+            <div className="field is-horizontal" style={{ marginHorizontal: "1rem" }}>
+              <div className="field-label is-normal" style={{ marginRight: "unset" }}>
                 <label className="label">To: </label>
               </div>
               <div className="field-body is-normal">
-                <div style={{ width: '100%', height: '80%' }}>
+                <div style={{ width: "100%", height: "80%" }}>
                   <DatePicker
                     selected={startDate}
                     showTimeSelect
@@ -291,10 +292,10 @@ export default class Analytics extends React.Component {
               minWidth: 200,
               Cell: props => (
                 <span className={`has-text-centered ${
-                  el.column_name.startsWith('cenote') || el.column_name.startsWith('uuid') ? 'has-text-danger' : 'has-text-info'}`}
+                  el.column_name.startsWith("cenote") || el.column_name.startsWith("uuid") ? "has-text-danger" : "has-text-info"}`}
                 >
-                  {['cenote$created_at', 'cenote$timestamp'].includes(el.column_name)
-                    ? moment(props.value).format('LTS, DD/MM/YYYY')
+                  {["cenote$created_at", "cenote$timestamp"].includes(el.column_name)
+                    ? moment(props.value).format("LTS, DD/MM/YYYY")
                     : props.value}
                 </span>
               ),

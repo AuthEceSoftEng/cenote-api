@@ -1,17 +1,17 @@
-import React from 'react';
-import { connect } from 'react-redux';
-import { identity } from 'ramda';
-import PropTypes from 'prop-types';
-import classNames from 'classnames';
-import { Link } from 'react-router-dom';
+import React from "react";
+import { connect } from "react-redux";
+import { identity } from "ramda";
+import PropTypes from "prop-types";
+import classNames from "classnames";
+import { Link } from "react-router-dom";
 
-import { attemptLogout } from '../../actions/organization';
+import { attemptLogout } from "../../actions/organization";
 
 const SettingsMenuContainer = (props) => {
   const { pathname, attemptLogout: attemptlogout } = props;
 
-  const profileClasses = classNames({ 'is-active': pathname.includes('profile') || pathname === '/settings' || pathname === '/settings/' });
-  const accountClasses = classNames({ 'is-active': pathname.includes('account') });
+  const profileClasses = classNames({ "is-active": pathname.includes("profile") || pathname === "/settings" || pathname === "/settings/" });
+  const accountClasses = classNames({ "is-active": pathname.includes("account") });
   const logout = () => attemptlogout().catch(identity);
 
   return (
@@ -28,7 +28,7 @@ const SettingsMenuContainer = (props) => {
           <Link to="/settings/account" className={accountClasses}>Account</Link>
         </li>
         <li>
-          <button className="button is-danger" style={{ marginTop: '3%' }} onClick={logout} type="button" onKeyPress={logout}>Logout</button>
+          <button className="button is-danger" style={{ marginTop: "3%" }} onClick={logout} type="button" onKeyPress={logout}>Logout</button>
         </li>
       </ul>
     </aside>

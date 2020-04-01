@@ -1,6 +1,6 @@
 (function eventPath() {
-  if (!('path' in Event.prototype)) {
-    Object.defineProperty(Event.prototype, 'path', {
+  if (!("path" in Event.prototype)) {
+    Object.defineProperty(Event.prototype, "path", {
       get() {
         const path = [];
         let currentElem = this.target;

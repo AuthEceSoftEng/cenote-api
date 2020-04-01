@@ -16,6 +16,6 @@ module.exports = (data) => {
       if (isEmpty) { result[prop] = {}; }
     }
   }
-  recurse(data, '');
+  recurse(data, "");
   return result;
 };

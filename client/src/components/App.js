@@ -1,14 +1,14 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
-import { Route, Switch, withRouter } from 'react-router-dom';
-import { hot } from 'react-hot-loader';
-import Notifications from 'react-notification-system-redux';
-import { pick } from 'ramda';
+import React from "react";
+import PropTypes from "prop-types";
+import { connect } from "react-redux";
+import { Route, Switch, withRouter } from "react-router-dom";
+import { hot } from "react-hot-loader";
+import Notifications from "react-notification-system-redux";
+import { pick } from "ramda";
 import { RegisterPage, LoginPage, NotFoundPage, ProjectPage, RecoveryPage, SettingsPage, ProjectInfoPage,
-  ResetPage } from '../pages';
-import Navigation from './Navigation';
-import Footer from './Footer';
+  ResetPage } from "../pages";
+import Navigation from "./Navigation";
+import Footer from "./Footer";
 
 class App extends React.Component {
   static propTypes = {
@@ -17,7 +17,7 @@ class App extends React.Component {
   }
 
   componentDidMount() {
-    if (!document.cookie) document.cookie = 'cenote=yo';
+    if (!document.cookie) document.cookie = "cenote=yo";
   }
 
   render() {
@@ -44,6 +44,6 @@ class App extends React.Component {
     );
   }
 }
-const mapStateToProps = pick(['alerts']);
+const mapStateToProps = pick(["alerts"]);
 
 export default hot(module)(withRouter(connect(mapStateToProps)(App)));

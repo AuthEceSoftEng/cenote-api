@@ -1,15 +1,15 @@
-const express = require('express');
-const { KafkaClient, Producer } = require('kafka-node');
-const uuid = require('uuid/v4');
-const moment = require('moment');
+const express = require("express");
+const { KafkaClient, Producer } = require("kafka-node");
+const uuid = require("uuid/v4");
+const moment = require("moment");
 
-const { Project } = require('../models');
-const { flattenJSON, isObject } = require('../utils');
+const { Project } = require("../models");
+const { flattenJSON, isObject } = require("../utils");
 
 const router = express.Router({ mergeParams: true });
 
 const producer = new Producer(new KafkaClient({ kafkaHost: process.env.KAFKA_SERVERS }), { requireAcks: 0, partitionerType: 2 });
-producer.on('error', error => console.error(error));
+producer.on("error", error => console.error(error));
 
 /**
  * @apiDefine ProjectNotFoundError
@@ -95,38 +95,38 @@ producer.on('error', error => console.error(error));
 * @apiUse InvalidCollectionNameError
 * @apiUse InvalidPropertyNameError
 */
-router.post('/:EVENT_COLLECTION', (req, res) => Project.findOne({ projectId: req.params.PROJECT_ID }, {}, { lean: true }, async (err2, project) => {
+router.post("/:EVENT_COLLECTION", (req, res) => Project.findOne({ projectId: req.params.PROJECT_ID }, {}, { lean: true }, async (err2, project) => {
   if (!/^[a-z]+[a-z0-9]*$/g.test(req.params.EVENT_COLLECTION)) {
     return res.status(400).json({
-      message: 'Event collection names must start with a letter and can contain only lowercase letters and numbers.',
-      error: 'InvalidCollectionNameError',
+      message: "Event collection names must start with a letter and can contain only lowercase letters and numbers.",
+      error: "InvalidCollectionNameError",
     });
   }
   let { payload } = req.body;
-  if (!payload) return res.status(400).json({ error: 'NoDataSentError' });
-  if (Object.keys(flattenJSON(payload)).some(propertyName => propertyName.split('💩').some(el => !/^[a-z]+[a-z0-9]*$/g.test(el)))) {
+  if (!payload) return res.status(400).json({ error: "NoDataSentError" });
+  if (Object.keys(flattenJSON(payload)).some(propertyName => propertyName.split("💩").some(el => !/^[a-z]+[a-z0-9]*$/g.test(el)))) {
     return res.status(400).json({
-      message: 'Property names must start with a letter and can contain only lowercase letters and numbers.',
-      error: 'InvalidPropertyNameError',
+      message: "Property names must start with a letter and can contain only lowercase letters and numbers.",
+      error: "InvalidPropertyNameError",
     });
   }
-  if (err2 || !project) return res.status(404).json({ error: 'ProjectNotFoundError' });
+  if (err2 || !project) return res.status(404).json({ error: "ProjectNotFoundError" });
   const { writeKey, masterKey } = req.query;
-  if (!writeKey && !masterKey) return res.status(403).json({ error: 'NoCredentialsSentError' });
-  if (!(writeKey === project.writeKey || masterKey === project.masterKey)) return res.status(401).json({ message: 'KeyNotAuthorizedError' });
+  if (!writeKey && !masterKey) return res.status(403).json({ error: "NoCredentialsSentError" });
+  if (!(writeKey === project.writeKey || masterKey === project.masterKey)) return res.status(401).json({ message: "KeyNotAuthorizedError" });
   const cenote = {
     created_at: moment().valueOf(),
     id: uuid(),
-    url: `/projects/${req.params.PROJECT_ID}/events/${req.params.EVENT_COLLECTION.replace(/-/g, '').toLowerCase()}`,
+    url: `/projects/${req.params.PROJECT_ID}/events/${req.params.EVENT_COLLECTION.replace(/-/g, "").toLowerCase()}`,
   };
   if (!Array.isArray(payload)) payload = [payload];
   let shouldShowWarningForTimestamp = false;
   for (let i = 0; i < payload.length; i += 1) {
     const { data, timestamp } = payload[i];
-    if (!data || !isObject(data)) return res.status(400).json({ error: 'NoDataSentError' });
+    if (!data || !isObject(data)) return res.status(400).json({ error: "NoDataSentError" });
     if (timestamp && moment(timestamp).isValid() && moment(timestamp).isBefore(moment())) {
       cenote.timestamp = moment(timestamp).toISOString(true);
-      if (moment(timestamp).isBefore(moment('2000-01-01'))) shouldShowWarningForTimestamp = true;
+      if (moment(timestamp).isBefore(moment("2000-01-01"))) shouldShowWarningForTimestamp = true;
     } else {
       cenote.timestamp = moment(cenote.created_at).toISOString(true);
     }
@@ -143,7 +143,7 @@ router.post('/:EVENT_COLLECTION', (req, res) => Project.findOne({ projectId: req
       }], err => (err ? notCool(err) : cool())));
     }
     return res.status(202).json({ message: `Events sent!${shouldShowWarningForTimestamp
-      ? ' HEADS UP: Timestamp(s) appear to be very old. Maybe you accidentally used seconds instead of milliseconds?' : ''}` });
+      ? " HEADS UP: Timestamp(s) appear to be very old. Maybe you accidentally used seconds instead of milliseconds?" : ""}` });
   } catch (err) {
     return res.status(500).json({ message: err.message });
   }

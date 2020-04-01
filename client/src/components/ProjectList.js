@@ -1,9 +1,9 @@
-import React from 'react';
-import { connect } from 'react-redux';
-import PropTypes from 'prop-types';
-import { pick, reverse } from 'ramda';
+import React from "react";
+import { connect } from "react-redux";
+import PropTypes from "prop-types";
+import { pick, reverse } from "ramda";
 
-import Project from './Project';
+import Project from "./Project";
 
 function ProjectList({ projects }) {
   return (
@@ -15,6 +15,6 @@ function ProjectList({ projects }) {
 
 ProjectList.propTypes = { projects: PropTypes.arrayOf(PropTypes.object).isRequired };
 
-const mapStateToProps = pick(['projects']);
+const mapStateToProps = pick(["projects"]);
 
 export default connect(mapStateToProps)(ProjectList);

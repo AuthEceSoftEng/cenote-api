@@ -1,10 +1,10 @@
-import { connect } from 'react-redux';
-import { pick } from 'ramda';
+import { connect } from "react-redux";
+import { pick } from "ramda";
 
-import { attemptOpenProjectInfo, attemptUpdateProjectTitle, attemptDeleteProject } from '../../actions/projects';
-import ProjectContainer from './ProjectContainer';
+import { attemptOpenProjectInfo, attemptUpdateProjectTitle, attemptDeleteProject } from "../../actions/projects";
+import ProjectContainer from "./ProjectContainer";
 
-const mapStateToProps = pick(['organization']);
+const mapStateToProps = pick(["organization"]);
 
 const mapDispatchToProps = dispatch => ({
   openProjectInfo: projectId => dispatch(attemptOpenProjectInfo(projectId)),

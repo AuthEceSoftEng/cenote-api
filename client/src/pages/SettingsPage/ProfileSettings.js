@@ -1,11 +1,11 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
-import { pick, identity, isEmpty } from 'ramda';
+import React from "react";
+import PropTypes from "prop-types";
+import { connect } from "react-redux";
+import { pick, identity, isEmpty } from "ramda";
 
-import { attemptGetOrganization, attemptUpdateOrganization } from '../../actions/organization';
-import { validateName } from '../../utils/validation';
-import { Box } from '../../components';
+import { attemptGetOrganization, attemptUpdateOrganization } from "../../actions/organization";
+import { validateName } from "../../utils/validation";
+import { Box } from "../../components";
 
 class ProfileSettings extends React.Component {
   static propTypes = {
@@ -23,12 +23,12 @@ class ProfileSettings extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      firstName: props.organization.firstName || '',
-      username: props.organization.username || '',
-      lastName: props.organization.lastName || '',
-      bio: props.organization.bio || '',
-      profilePic: props.organization.profilePic || '',
-      organizationId: props.organization.organizationId || '',
+      firstName: props.organization.firstName || "",
+      username: props.organization.username || "",
+      lastName: props.organization.lastName || "",
+      bio: props.organization.bio || "",
+      profilePic: props.organization.profilePic || "",
+      organizationId: props.organization.organizationId || "",
       firstNameEdited: false,
       lastNameEdited: false,
       bioEdited: false,
@@ -96,14 +96,14 @@ class ProfileSettings extends React.Component {
               <figure className="image">
                 <img
                   className="profile-img"
-                  src={profilePic || require('../../assets/images/default-profile.png')}
+                  src={profilePic || require("../../assets/images/default-profile.png")}
                   alt="Profile"
                 />
               </figure>
               <div className="field">
                 <p className="control">
                   <label htmlFor="profile-pic-url" className="label">
-                    {'Picture URL'}
+                    Picture URL
                     <input
                       id="profile-pic-url"
                       className="input"
@@ -121,7 +121,7 @@ class ProfileSettings extends React.Component {
               <div className="field">
                 <p className="control">
                   <label htmlFor="organization-id" className="label">
-                    {'Organization ID'}
+                    Organization ID
                     <input
                       id="organization-id"
                       className="input has-text-danger has-text-centered has-text-weight-semibold is-size-4"
@@ -137,7 +137,7 @@ class ProfileSettings extends React.Component {
                   <div className="field">
                     <p className="control">
                       <label htmlFor="first-name" className="label">
-                        {'First Name'}
+                        First Name
                         <input
                           id="first-name"
                           className="input"
@@ -154,7 +154,7 @@ class ProfileSettings extends React.Component {
                   <div className="field">
                     <p className="control">
                       <label htmlFor="last-name" className="label">
-                        {'Last Name'}
+                        Last Name
                         <input
                           id="last-name"
                           className="input"
@@ -171,7 +171,7 @@ class ProfileSettings extends React.Component {
               <div className="field">
                 <p className="control">
                   <label htmlFor="bio" className="label">
-                    {'Bio'}
+                    Bio
                     <textarea
                       id="bio"
                       className="textarea"
@@ -197,7 +197,7 @@ class ProfileSettings extends React.Component {
   }
 }
 
-const mapStateToProps = pick(['organization', 'locations']);
+const mapStateToProps = pick(["organization", "locations"]);
 const mapDispatchToProps = dispatch => ({
   attemptGetOrganization: () => dispatch(attemptGetOrganization()),
   attemptUpdateOrganization: organization => dispatch(attemptUpdateOrganization(organization)),

@@ -1,1 +1,1 @@
-export { default } from './SettingsPageContainer';
+export { default } from "./SettingsPageContainer";

@@ -1,25 +1,25 @@
-import { createStore, compose, applyMiddleware } from 'redux';
-import reduxImmutableStateInvariant from 'redux-immutable-state-invariant';
-import thunk from 'redux-thunk';
-import { createBrowserHistory } from 'history';
-import { routerMiddleware } from 'connected-react-router';
-import { persistStore, persistReducer, createTransform } from 'redux-persist';
-import * as storage from 'localforage';
+import { createStore, compose, applyMiddleware } from "redux";
+import reduxImmutableStateInvariant from "redux-immutable-state-invariant";
+import thunk from "redux-thunk";
+import { createBrowserHistory } from "history";
+import { routerMiddleware } from "connected-react-router";
+import { persistStore, persistReducer, createTransform } from "redux-persist";
+import * as storage from "localforage";
 
-import rootReducer from '../reducers';
+import rootReducer from "../reducers";
 
 export const history = createBrowserHistory();
 
 const transform = createTransform(
   undefined,
   (state) => {
-    if (document.cookie === 'cenote=yo') return state;
+    if (document.cookie === "cenote=yo") return state;
     return undefined;
   },
-  { key: ['root'] },
+  { key: ["root"] },
 );
 
-const persistedReducer = persistReducer({ key: 'root', storage, transforms: [transform] }, rootReducer(history));
+const persistedReducer = persistReducer({ key: "root", storage, transforms: [transform] }, rootReducer(history));
 
 function configureStoreProd(initialState) {
   const reactRouterMiddleware = routerMiddleware(history);
@@ -53,8 +53,8 @@ function configureStoreDev(initialState) {
   );
 
   if (module.hot) {
-    module.hot.accept('../reducers', () => {
-      const nextRootReducer = require('../reducers').default;
+    module.hot.accept("../reducers", () => {
+      const nextRootReducer = require("../reducers").default;
       store.replaceReducer(persistedReducer(nextRootReducer));
     });
   }
@@ -63,6 +63,6 @@ function configureStoreDev(initialState) {
   return { store, persistor };
 }
 
-const configureStore = process.env.NODE_ENV === 'production' ? configureStoreProd : configureStoreDev;
+const configureStore = process.env.NODE_ENV === "production" ? configureStoreProd : configureStoreDev;
 
 export default configureStore;

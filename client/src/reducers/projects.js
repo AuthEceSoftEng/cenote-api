@@ -1,7 +1,7 @@
-import update from 'immutability-helper';
-import { findIndex, propEq } from 'ramda';
+import update from "immutability-helper";
+import { findIndex, propEq } from "ramda";
 
-import { SET_PROJECTS, ADD_PROJECT, OPEN_PROJECT_INFO, UPDATE_PROJECT, REMOVE_PROJECT, LOGOUT_ORG } from '../constants/actionTypes';
+import { SET_PROJECTS, ADD_PROJECT, OPEN_PROJECT_INFO, UPDATE_PROJECT, REMOVE_PROJECT, LOGOUT_ORG } from "../constants/actionTypes";
 
 export function project(state = { }, action) {
   switch (action.type) {
@@ -27,7 +27,7 @@ export function project(state = { }, action) {
 }
 
 export default function projects(state = [], action) {
-  const index = findIndex(propEq('projectId', action.projectId), state);
+  const index = findIndex(propEq("projectId", action.projectId), state);
   const updatedAtIndex = { $splice: [[index, 1, project(state[index], action)]] };
 
   switch (action.type) {

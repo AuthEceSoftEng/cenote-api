@@ -1,10 +1,10 @@
-export const LOGIN_ORG = 'LOGIN_ORG';
-export const LOGOUT_ORG = 'LOGOUT_ORG';
-export const UPDATE_ORG = 'UPDATE_ORG';
+export const LOGIN_ORG = "LOGIN_ORG";
+export const LOGOUT_ORG = "LOGOUT_ORG";
+export const UPDATE_ORG = "UPDATE_ORG";
 
-export const SET_PROJECTS = 'SET_PROJECTS';
-export const ADD_PROJECT = 'ADD_PROJECT';
-export const OPEN_PROJECT_INFO = 'OPEN_PROJECT_INFO';
-export const UPDATE_PROJECT = 'UPDATE_PROJECT';
-export const REMOVE_PROJECT = 'REMOVE_PROJECT';
-export const INCREMENT_PROJECT_ID = 'INCREMENT_PROJECT_ID';
+export const SET_PROJECTS = "SET_PROJECTS";
+export const ADD_PROJECT = "ADD_PROJECT";
+export const OPEN_PROJECT_INFO = "OPEN_PROJECT_INFO";
+export const UPDATE_PROJECT = "UPDATE_PROJECT";
+export const REMOVE_PROJECT = "REMOVE_PROJECT";
+export const INCREMENT_PROJECT_ID = "INCREMENT_PROJECT_ID";

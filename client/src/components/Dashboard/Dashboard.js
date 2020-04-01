@@ -1,20 +1,20 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
-import request from 'superagent';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrashAlt } from '@fortawesome/free-solid-svg-icons';
-import Swal from 'sweetalert2';
-import ReactTable from 'react-table';
-import * as moment from 'moment';
-import DownloadLink from 'react-download-link';
-import { parse } from 'json2csv';
-import { ClipLoader } from 'react-spinners';
+import React from "react";
+import PropTypes from "prop-types";
+import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
+import request from "superagent";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faTrashAlt } from "@fortawesome/free-solid-svg-icons";
+import Swal from "sweetalert2";
+import ReactTable from "react-table";
+import * as moment from "moment";
+import DownloadLink from "react-download-link";
+import { parse } from "json2csv";
+import { ClipLoader } from "react-spinners";
 
-import { handleSuccess, handleError } from '../../api/helpers';
-import { EventCollection, Analytics, Collaborators } from './components';
-import { getEventCollections, getRecentEvents, getEventCount } from './utils';
-import { Button } from '..';
+import { handleSuccess, handleError } from "../../api/helpers";
+import { EventCollection, Analytics, Collaborators } from "./components";
+import { getEventCollections, getRecentEvents, getEventCount } from "./utils";
+import { Button } from "..";
 
 
 export default class Dashboard extends React.Component {
@@ -206,12 +206,12 @@ export default class Dashboard extends React.Component {
     const { collections } = this.state;
     const { projectId } = this.props;
     Swal.fire({
-      title: 'Are you sure?',
-      text: 'Once deleted, you will not be able to recover data lost!',
-      type: 'warning',
+      title: "Are you sure?",
+      text: "Once deleted, you will not be able to recover data lost!",
+      type: "warning",
       showCancelButton: true,
-      confirmButtonText: 'Yes, delete it!',
-      cancelButtonText: 'No, cancel!',
+      confirmButtonText: "Yes, delete it!",
+      cancelButtonText: "No, cancel!",
       showLoaderOnConfirm: true,
       preConfirm: () => request.delete(`/api/projects/${projectId}/queries/dropTable`).send({ event_collection: col })
         .then(info => info).catch(error => Swal.showValidationMessage(`Request failed: ${error}`)),
@@ -221,13 +221,13 @@ export default class Dashboard extends React.Component {
         delete collections[col];
         this.setState({ collections });
         Swal.fire({
-          title: 'Poof!',
-          text: 'Your collection has been deleted!',
-          type: 'success',
-          confirmButtonText: 'Nice!',
+          title: "Poof!",
+          text: "Your collection has been deleted!",
+          type: "success",
+          confirmButtonText: "Nice!",
         });
       } else if (result.dismiss === Swal.DismissReason.cancel) {
-        Swal.fire('Cancelled', 'Your collection is safe :)', 'error');
+        Swal.fire("Cancelled", "Your collection is safe :)", "error");
       }
     });
   }
@@ -246,18 +246,18 @@ export default class Dashboard extends React.Component {
           </span>
         </Tab>,
       );
-      let headerMessage = '';
+      let headerMessage = "";
       if (!eventCounts[col]) {
-        headerMessage = 'last events...';
+        headerMessage = "last events...";
       } else {
         if (eventCounts[col] > 0) headerMessage = `last ${eventCounts[col]}, of ${eventCounts[col]} events...`;
         if (eventCounts[col] > 5) headerMessage = `last 5, of ${eventCounts[col]} events...`;
       }
       tabPanel.push(
         <TabPanel key={`tabpanel_col_${ind}`}>
-          <hr style={{ backgroundColor: '#10447a', height: '1px' }} />
+          <hr style={{ backgroundColor: "#10447a", height: "1px" }} />
           <EventCollection properties={collections[col]} projectId={projectId} eventCollection={col} />
-          <h4 style={{ marginTop: '1%' }} className="title is-4">{headerMessage}</h4>
+          <h4 style={{ marginTop: "1%" }} className="title is-4">{headerMessage}</h4>
           {events[col] ? (
             <ReactTable
               showPageSizeOptions={false}
@@ -270,10 +270,10 @@ export default class Dashboard extends React.Component {
                 minWidth: 200,
                 Cell: props => (
                   <span className={`has-text-centered ${
-                    el.column_name.startsWith('cenote') || el.column_name.startsWith('uuid') ? 'has-text-danger' : 'has-text-info'}`}
+                    el.column_name.startsWith("cenote") || el.column_name.startsWith("uuid") ? "has-text-danger" : "has-text-info"}`}
                   >
-                    {['cenote$created_at', 'cenote$timestamp'].includes(el.column_name)
-                      ? moment(props.value).format('LTS, DD/MM/YYYY')
+                    {["cenote$created_at", "cenote$timestamp"].includes(el.column_name)
+                      ? moment(props.value).format("LTS, DD/MM/YYYY")
                       : props.value}
                   </span>
                 ),
@@ -315,12 +315,12 @@ export default class Dashboard extends React.Component {
     return (
       <div>
         <h1 className="title is-1">{title}</h1>
-        <hr style={{ backgroundColor: '#10447a', height: '1px' }} />
+        <hr style={{ backgroundColor: "#10447a", height: "1px" }} />
         <Tabs forceRenderTabPanel defaultIndex={0} defaultFocus>
           <TabList>
             <Tab>Event Collections</Tab>
             <Tab>Project Information</Tab>
-            <Tab style={{ backgroundColor: '#00A09E', color: 'white' }}>Review Events</Tab>
+            <Tab style={{ backgroundColor: "#00A09E", color: "white" }}>Review Events</Tab>
           </TabList>
           <TabPanel>
             {this._getEventCollectionInfo()}
@@ -333,18 +333,18 @@ export default class Dashboard extends React.Component {
                 <Tab>Collaborators</Tab>
               </TabList>
               <TabPanel>
-                <hr style={{ backgroundColor: '#10447a', height: '1px' }} />
+                <hr style={{ backgroundColor: "#10447a", height: "1px" }} />
                 <div className="container is-fluid">
                   <table
                     className="table has-text-centered"
                     align="center"
-                    style={{ borderCollapse: 'collapse', borderRadius: '1rem', overflow: 'hidden' }}
+                    style={{ borderCollapse: "collapse", borderRadius: "1rem", overflow: "hidden" }}
                   >
                     <thead>
-                      <tr style={{ backgroundColor: '#10447a' }}>
-                        <th className="has-text-centered" style={{ color: 'white' }}>Project Name</th>
-                        <th className="has-text-centered" style={{ color: 'white' }}>Project ID</th>
-                        <th className="has-text-centered" style={{ color: 'white' }}>Project Owner</th>
+                      <tr style={{ backgroundColor: "#10447a" }}>
+                        <th className="has-text-centered" style={{ color: "white" }}>Project Name</th>
+                        <th className="has-text-centered" style={{ color: "white" }}>Project ID</th>
+                        <th className="has-text-centered" style={{ color: "white" }}>Project Owner</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -358,25 +358,25 @@ export default class Dashboard extends React.Component {
                 </div>
               </TabPanel>
               <TabPanel>
-                <hr style={{ backgroundColor: '#10447a', height: '1px' }} />
+                <hr style={{ backgroundColor: "#10447a", height: "1px" }} />
                 <div className="container is-fluid">
                   <table
                     className="table has-text-centered"
                     align="center"
-                    style={{ borderCollapse: 'collapse', borderRadius: '1rem', overflow: 'hidden' }}
+                    style={{ borderCollapse: "collapse", borderRadius: "1rem", overflow: "hidden" }}
                   >
                     <thead>
-                      <tr style={{ backgroundColor: '#10447a' }}>
-                        <th className="has-text-centered is-vcentered" style={{ color: 'white' }}>Key</th>
-                        <th className="has-text-centered" style={{ color: 'white' }}>Value</th>
-                        <th className="has-text-centered" style={{ color: 'white' }}>Options</th>
+                      <tr style={{ backgroundColor: "#10447a" }}>
+                        <th className="has-text-centered is-vcentered" style={{ color: "white" }}>Key</th>
+                        <th className="has-text-centered" style={{ color: "white" }}>Value</th>
+                        <th className="has-text-centered" style={{ color: "white" }}>Options</th>
                       </tr>
                     </thead>
                     <tbody>
                       {
                         readKeys.map((key, ind) => (
                           <tr key={`rowread${ind}`}>
-                            <th className="has-text-centered" style={{ color: '#00A09E', verticalAlign: 'middle' }}>Read key</th>
+                            <th className="has-text-centered" style={{ color: "#00A09E", verticalAlign: "middle" }}>Read key</th>
                             {editRead[ind]
                               ? (
                                 <td className="has-text-centered has-text-grey">
@@ -389,7 +389,7 @@ export default class Dashboard extends React.Component {
                                   />
                                 </td>
                               )
-                              : (<td className="has-text-centered has-text-grey" style={{ verticalAlign: 'middle' }}>{key}</td>)}
+                              : (<td className="has-text-centered has-text-grey" style={{ verticalAlign: "middle" }}>{key}</td>)}
                             {editRead[ind]
                               ? (
                                 <td>
@@ -409,7 +409,7 @@ export default class Dashboard extends React.Component {
                       {
                         writeKeys.map((key, ind) => (
                           <tr key={`rowwrite${ind}`}>
-                            <th className="has-text-centered" style={{ color: '#00A09E', verticalAlign: 'middle' }}>Write key</th>
+                            <th className="has-text-centered" style={{ color: "#00A09E", verticalAlign: "middle" }}>Write key</th>
                             {editWrite[ind]
                               ? (
                                 <td className="has-text-centered has-text-grey">
@@ -422,7 +422,7 @@ export default class Dashboard extends React.Component {
                                   />
                                 </td>
                               )
-                              : (<td className="has-text-centered has-text-grey" style={{ verticalAlign: 'middle' }}>{key}</td>)}
+                              : (<td className="has-text-centered has-text-grey" style={{ verticalAlign: "middle" }}>{key}</td>)}
                             {editWrite[ind]
                               ? (
                                 <td>
@@ -442,7 +442,7 @@ export default class Dashboard extends React.Component {
                       {
                         masterKeys.map((key, ind) => (
                           <tr key={`rowmaster${ind}`}>
-                            <th className="has-text-centered" style={{ color: '#00A09E', verticalAlign: 'middle' }}>Master key</th>
+                            <th className="has-text-centered" style={{ color: "#00A09E", verticalAlign: "middle" }}>Master key</th>
                             {editMaster[ind]
                               ? (
                                 <td className="has-text-centered has-text-grey">
@@ -455,7 +455,7 @@ export default class Dashboard extends React.Component {
                                   />
                                 </td>
                               )
-                              : (<td className="has-text-centered has-text-grey" style={{ verticalAlign: 'middle' }}>{key}</td>)}
+                              : (<td className="has-text-centered has-text-grey" style={{ verticalAlign: "middle" }}>{key}</td>)}
                             {editMaster[ind]
                               ? (
                                 <td>
@@ -477,13 +477,13 @@ export default class Dashboard extends React.Component {
                 </div>
               </TabPanel>
               <TabPanel>
-                <hr style={{ backgroundColor: '#10447a', height: '1px' }} />
+                <hr style={{ backgroundColor: "#10447a", height: "1px" }} />
                 <Collaborators projectId={projectId} collaborators={collaborators} setCollaborators={this.setCollaborators} />
               </TabPanel>
             </Tabs>
           </TabPanel>
           <TabPanel>
-            <hr style={{ backgroundColor: '#10447a', height: '1px' }} />
+            <hr style={{ backgroundColor: "#10447a", height: "1px" }} />
             <Analytics collections={collections} projectId={projectId} readKey={readKeys[0]} />
           </TabPanel>
         </Tabs>

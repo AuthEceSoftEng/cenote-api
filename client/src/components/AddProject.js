@@ -1,30 +1,30 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
+import React from "react";
+import PropTypes from "prop-types";
+import { connect } from "react-redux";
 
-import Button from './Button';
-import { attemptAddProject } from '../actions/projects';
+import Button from "./Button";
+import { attemptAddProject } from "../actions/projects";
 
 class AddProject extends React.Component {
   static propTypes = { addProject: PropTypes.func.isRequired };
 
   constructor(props) {
     super(props);
-    this.state = { title: '' };
+    this.state = { title: "" };
   }
 
   componentDidMount() {
-    window.addEventListener('keypress', this.keypress);
+    window.addEventListener("keypress", this.keypress);
   }
 
   componentWillUnmount() {
-    window.removeEventListener('keypress', this.keypress);
+    window.removeEventListener("keypress", this.keypress);
   }
 
   updateTitle = e => this.setState({ title: e.target.value })
 
   keypress = (e) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       this.addProject();
     }
   }
@@ -34,7 +34,7 @@ class AddProject extends React.Component {
     const { addProject } = this.props;
     if (title) {
       addProject(title);
-      this.setState({ title: '' });
+      this.setState({ title: "" });
     }
     window.location.reload();
   }
@@ -54,7 +54,7 @@ class AddProject extends React.Component {
         </div>
         <div className="is-2">
           <Button
-            style={{ width: '100%', borderTopLeftRadius: 0, borderBottomLeftRadius: 0, backgroundColor: '#00A09E' }}
+            style={{ width: "100%", borderTopLeftRadius: 0, borderBottomLeftRadius: 0, backgroundColor: "#00A09E" }}
             onClick={this.addProject}
             label="+Add"
             type="success"

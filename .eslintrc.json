@@ -2,5 +2,6 @@
   "extends": "iamnapo",
   "rules": {
     "camelcase": "off"
-  }
+  },
+  "parser": "babel-eslint"
 }

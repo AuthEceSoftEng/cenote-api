@@ -1,10 +1,10 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
-import { push } from 'connected-react-router';
-import { pick, isEmpty } from 'ramda';
+import React from "react";
+import PropTypes from "prop-types";
+import { connect } from "react-redux";
+import { push } from "connected-react-router";
+import { pick, isEmpty } from "ramda";
 
-import { Dashboard } from '../../components';
+import { Dashboard } from "../../components";
 
 class ProjectInfoPage extends React.Component {
   static propTypes = {
@@ -40,7 +40,7 @@ class ProjectInfoPage extends React.Component {
   }
 }
 
-const mapStateToProps = pick(['organization', 'projects']);
-const mapDispatchToProps = dispatch => ({ pushToLogin: () => dispatch(push('/login')) });
+const mapStateToProps = pick(["organization", "projects"]);
+const mapDispatchToProps = dispatch => ({ pushToLogin: () => dispatch(push("/login")) });
 
 export default connect(mapStateToProps, mapDispatchToProps)(ProjectInfoPage);

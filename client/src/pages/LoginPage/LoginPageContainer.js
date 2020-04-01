@@ -1,10 +1,10 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
-import { push } from 'connected-react-router';
-import { isEmpty, pick } from 'ramda';
+import React from "react";
+import PropTypes from "prop-types";
+import { connect } from "react-redux";
+import { push } from "connected-react-router";
+import { isEmpty, pick } from "ramda";
 
-import LoginPage from './LoginPage';
+import LoginPage from "./LoginPage";
 
 class LoginPageContainer extends React.Component {
   static propTypes = {
@@ -28,7 +28,7 @@ class LoginPageContainer extends React.Component {
   }
 }
 
-const mapStateToProps = pick(['organization']);
-const mapDispatchToProps = dispatch => ({ pushToProjects: () => dispatch(push('/projects')) });
+const mapStateToProps = pick(["organization"]);
+const mapDispatchToProps = dispatch => ({ pushToProjects: () => dispatch(push("/projects")) });
 
 export default connect(mapStateToProps, mapDispatchToProps)(LoginPageContainer);

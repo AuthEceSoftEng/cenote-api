@@ -1,6 +1,6 @@
-import React from 'react';
+import React from "react";
 
-import { ChangeUsername, ChangePassword, ChangeEmail } from '../../components';
+import { ChangeUsername, ChangePassword, ChangeEmail } from "../../components";
 
 
 export default function Account() {
