@@ -801,24 +801,26 @@ router.get("/eeris", canAccessForCollection, (req, res) => Project.findOne({ pro
         case "week": {
           const value = await r.get(keyName);
           const jsonValue = JSON.parse(value);
+          stats.avg = 0;
           stats.min = Number.POSITIVE_INFINITY;
           stats.max = Number.NEGATIVE_INFINITY;
-          stats.avg = 0;
+          let count = 0;
+          let sum = 0;
           for (let i = 0; i < 7; i += 1) {
             const year = date.getFullYear();
             const month = (`0${date.getMonth() + 1}`).slice(-2);
             const day = (`0${date.getDate()}`).slice(-2);
+            count += jsonValue[`count_${year}-${month}-${day}`] || 0;
+            sum += jsonValue[`sum_${year}-${month}-${day}`] || 0;
             const avg = jsonValue[`avg_${year}-${month}-${day}`] || 0;
             const min = jsonValue[`min_${year}-${month}-${day}`] || 0;
             const max = jsonValue[`max_${year}-${month}-${day}`] || 0;
             values.unshift(avg);
-            stats.avg += avg;
             if (min < stats.min) stats.min = min;
             if (max > stats.max) stats.max = max;
-
             date.setDate(date.getDate() - 1);
           }
-          stats.avg /= 7;
+          stats.avg = sum / count;
           break;
         }
         case "month": {
