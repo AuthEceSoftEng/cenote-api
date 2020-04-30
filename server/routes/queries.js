@@ -935,6 +935,28 @@ router.delete("/testCleanup", async (req, res) => {
   }
 });
 
+router.delete("/eerisTestCleanup", async (req, res) => {
+  try {
+    const { installationId } = req.query;
+    const queryForKeys = `SHOW COLUMNS FROM ${req.params.PROJECT_ID}_installations`;
+    const columns = (await client.query(queryForKeys)).rows
+      .filter(el => !el.column_name.startsWith("cenote") && el.data_type.toLowerCase() === "decimal").map(el => el.column_name);
+    for (const column of columns) {
+      const redisKeyDefault = `${req.params.PROJECT_ID}_installations_${column}`;
+      const redisKeyeeRIS = `${req.params.PROJECT_ID}_installations_${installationId}_${column}_hist`;
+      console.log(redisKeyDefault);
+      console.log(redisKeyeeRIS);
+      await r.del(redisKeyDefault);
+      await r.del(redisKeyeeRIS);
+    }
+    const query = `DROP TABLE IF EXISTS ${req.params.PROJECT_ID}_installations`;
+    await client.query(query);
+    return res.status(204).json({ ok: true });
+  } catch (error) {
+    return res.status(400).json({ ok: false, results: "BadQueryError", message: error.message });
+  }
+});
+
 router.all("/*", (req, res) => res.status(400).json({ ok: false, results: "This is not a valid query!" }));
 
 /**
