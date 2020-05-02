@@ -816,7 +816,7 @@ router.get("/eeris", canAccessForCollection, (req, res) => Project.findOne({ pro
             const min = jsonValue[`min_${year}-${month}-${day}`] || 0;
             const max = jsonValue[`max_${year}-${month}-${day}`] || 0;
             values.unshift(avg);
-            if (min < stats.min) stats.min = min;
+            if (min < stats.min && min !== 0) stats.min = min;
             if (max > stats.max) stats.max = max;
             date.setDate(date.getDate() - 1);
           }
