@@ -3365,5 +3365,160 @@
         }
       ]
     }
+  },
+  {
+    "type": "get",
+    "url": "/projects/:PROJECT_ID/queries/eeris",
+    "title": "eeRIS Historical Average",
+    "version": "0.1.0",
+    "name": "eerisHistAvg",
+    "group": "Queries",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "PROJECT_ID",
+            "description": "<p>Project's unique ID.</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "readKey/masterKey",
+            "description": "<p>Key for authorized read.</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "event_collection",
+            "description": "<p>Event collection.<br/><strong><u>Note:</u></strong> Event collection names must start with a letter and can contain only lowercase letters and numbers.</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "target_property",
+            "description": "<p>Desired Event collection's property.<br/><strong><u>Note:</u></strong> Property names must start with a letter and can contain only lowercase letters and numbers.</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "installationId",
+            "description": "<p>ID of the installation</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "type",
+            "description": "<p>Type of query (week, month, day)</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "dt",
+            "description": "<p>Date of specific day in case of day query. Format: YYYY-MM-DD</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "Boolean",
+            "optional": false,
+            "field": "ok",
+            "description": "<p>If the query succeded.</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "Array",
+            "optional": false,
+            "field": "results",
+            "description": "<p>Query result.</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Success-Response:",
+          "content": "HTTP/1.1 200 SUCCESS\n{\n  \"ok\": true\n  \"results\": {\n      \"values\": [...],\n      \"stats\": {\n        \"avg\": 50,\n        \"min\": 10,\n        \"max\": 100\n      }\n    }\n}\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "filename": "server/routes/queries.js",
+    "groupTitle": "Queries",
+    "error": {
+      "fields": {
+        "Error 4xx": [
+          {
+            "group": "Error 4xx",
+            "optional": false,
+            "field": "NoCredentialsSentError",
+            "description": "<p>No key credentials sent.</p>"
+          },
+          {
+            "group": "Error 4xx",
+            "optional": false,
+            "field": "KeyNotAuthorizedError",
+            "description": "<p>Key hasn't authorization.</p>"
+          },
+          {
+            "group": "Error 4xx",
+            "optional": false,
+            "field": "ProjectNotFoundError",
+            "description": "<p>The id of the Project was not found.</p>"
+          },
+          {
+            "group": "Error 4xx",
+            "optional": false,
+            "field": "TargetNotProvidedError",
+            "description": "<p>The <code>target_property</code> parameter must be provided.</p>"
+          },
+          {
+            "group": "Error 4xx",
+            "optional": false,
+            "field": "BadQueryError",
+            "description": "<p>The query can't be executed</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "NoCredentialsSentError:",
+          "content": "HTTP/1.1 403 Forbidden\n{\n  \"error\": \"NoCredentialsSentError\"\n}",
+          "type": "json"
+        },
+        {
+          "title": "KeyNotAuthorizedError:",
+          "content": "HTTP/1.1 401 Unauthorized\n{\n  \"error\": \"KeyNotAuthorizedError\"\n}",
+          "type": "json"
+        },
+        {
+          "title": "ProjectNotFoundError:",
+          "content": "HTTP/1.1 404 Not Found\n{\n  \"error\": \"ProjectNotFoundError\"\n}",
+          "type": "json"
+        },
+        {
+          "title": "TargetNotProvidedError:",
+          "content": "HTTP/1.1 404 Not Found\n{\n  \"error\": \"TargetNotProvidedError\"\n}",
+          "type": "json"
+        },
+        {
+          "title": "BadQueryError:",
+          "content": "HTTP/1.1 400 Bad Request\n{\n  \"results\": \"BadQueryError\",\n  \"message\": \"<The error that occured>\"\n}",
+          "type": "json"
+        }
+      ]
+    }
   }
 ]

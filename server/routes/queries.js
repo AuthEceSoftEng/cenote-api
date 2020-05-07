@@ -747,6 +747,125 @@ router.get("/extraction", canAccessForCollection, (req, res) => Project.findOne(
     }
   }));
 
+/**
+* @api {get} /projects/:PROJECT_ID/queries/eeris eeRIS Historical Average
+* @apiVersion 0.1.0
+* @apiName eerisHistAvg
+* @apiGroup Queries
+* @apiParam {String} PROJECT_ID Project's unique ID.
+* @apiParam {String} readKey/masterKey Key for authorized read.
+* @apiParam {String} event_collection Event collection.<br/><strong><u>Note:</u></strong> Event collection names must start with a
+* letter and can contain only lowercase letters and numbers.
+* @apiParam {String} target_property Desired Event collection's property.<br/><strong><u>Note:</u></strong> Property names must start with a
+* letter and can contain only lowercase letters and numbers.
+* @apiParam {String} installationId ID of the installation
+* @apiParam {String} type Type of query (week, month, day)
+* @apiParam {String} dt Date of specific day in case of day query. Format: YYYY-MM-DD
+* @apiSuccess {Boolean} ok If the query succeded.
+* @apiSuccess {Array} results Query result.
+* @apiSuccessExample {json} Success-Response:
+*     HTTP/1.1 200 SUCCESS
+*     {
+*       "ok": true
+*       "results": {
+          "values": [...],
+          "stats": {
+            "avg": 50,
+            "min": 10,
+            "max": 100
+          }
+        }
+    }
+*     }
+* @apiUse NoCredentialsSentError
+* @apiUse KeyNotAuthorizedError
+* @apiUse ProjectNotFoundError
+* @apiUse TargetNotProvidedError
+* @apiUse BadQueryError
+*/
+router.get("/eeris", canAccessForCollection, (req, res) => Project.findOne({ projectId: req.params.PROJECT_ID }).lean()
+  .exec(async (err2, project) => {
+    try {
+      if (err2 || !project) return res.status(404).json({ ok: false, results: "ProjectNotFoundError" });
+      const { readKey, masterKey, event_collection, target_property, installationId, type, dt } = req.query;
+      if (!target_property) return res.status(400).json({ ok: false, results: "TargetNotProvidedError" });
+      if (!(readKey === project.readKey || masterKey === project.masterKey)) {
+        return res.status(401).json({ ok: false, results: "KeyNotAuthorizedError" });
+      }
+
+      const keyName = `${`${req.params.PROJECT_ID}_${event_collection}_${installationId}_${target_property}`}_hist`;
+      const date = dt ? new Date(dt) : new Date();
+      const values = [];
+      const stats = {};
+      switch (type) {
+        case "week": {
+          const value = await r.get(keyName);
+          const jsonValue = JSON.parse(value);
+          stats.avg = 0;
+          stats.min = Number.POSITIVE_INFINITY;
+          stats.max = Number.NEGATIVE_INFINITY;
+          let count = 0;
+          let sum = 0;
+          for (let i = 0; i < 7; i += 1) {
+            const year = date.getFullYear();
+            const month = (`0${date.getMonth() + 1}`).slice(-2);
+            const day = (`0${date.getDate()}`).slice(-2);
+            count += jsonValue[`count_${year}-${month}-${day}`] || 0;
+            sum += jsonValue[`sum_${year}-${month}-${day}`] || 0;
+            const avg = jsonValue[`avg_${year}-${month}-${day}`] || 0;
+            const min = jsonValue[`min_${year}-${month}-${day}`] || 0;
+            const max = jsonValue[`max_${year}-${month}-${day}`] || 0;
+            values.unshift(avg);
+            if (min < stats.min && min !== 0) stats.min = min;
+            if (max > stats.max) stats.max = max;
+            date.setDate(date.getDate() - 1);
+          }
+          stats.avg = sum / count;
+          break;
+        }
+        case "month": {
+          const value = await r.get(keyName);
+          const jsonValue = JSON.parse(value);
+          const year = date.getFullYear();
+          const month = (`0${date.getMonth() + 1}`).slice(-2);
+          stats.avg = jsonValue[`avg_${year}-${month}`] || 0;
+          stats.min = jsonValue[`min_${year}-${month}`] || 0;
+          stats.max = jsonValue[`max_${year}-${month}`] || 0;
+          while (date.getMonth() === new Date().getMonth()) {
+            const day = (`0${date.getDate()}`).slice(-2);
+            values.unshift(jsonValue[`avg_${year}-${month}-${day}`] || 0);
+            date.setDate(date.getDate() - 1);
+          }
+          break;
+        }
+        case "day": {
+          const value = await r.get(keyName);
+          const jsonValue = JSON.parse(value);
+          date.setHours(0);
+          const year = date.getFullYear();
+          const month = (`0${date.getMonth() + 1}`).slice(-2);
+          while (date.getDate() === new Date(dt).getDate()) {
+            const day = (`0${date.getDate()}`).slice(-2);
+            const hours = (`0${date.getHours()}`).slice(-2);
+            values.push(jsonValue[`avg_${year}-${month}-${day}_${hours}`] || 0);
+            date.setTime(date.getTime() + (60 * 60 * 1000));
+          }
+          stats.avg = jsonValue[`avg_${dt}`] || 0;
+          stats.min = jsonValue[`min_${dt}`] || 0;
+          stats.max = jsonValue[`max_${dt}`] || 0;
+          break;
+        }
+        default:
+          return res.status(400).json({ ok: false, results: "BadQueryError", message: "Wrong or missing `type` parameter" });
+      }
+
+      const results = { values, stats };
+      return res.json({ ok: true, results });
+    } catch (error) {
+      return res.status(400).json({ ok: false, results: "BadQueryError", message: error.message });
+    }
+  }));
+
 router.get("/collections", requireAuth, (req, res) => {
   const query = "SELECT * from information_schema.columns WHERE table_schema='public'";
   return client.query(query)
@@ -809,6 +928,26 @@ router.delete("/testCleanup", async (req, res) => {
       await r.del(redisKey);
     }
     const query = `DROP TABLE IF EXISTS ${req.params.PROJECT_ID}_test`;
+    await client.query(query);
+    return res.status(204).json({ ok: true });
+  } catch (error) {
+    return res.status(400).json({ ok: false, results: "BadQueryError", message: error.message });
+  }
+});
+
+router.delete("/eerisTestCleanup", async (req, res) => {
+  try {
+    const { installationId } = req.query;
+    const queryForKeys = `SHOW COLUMNS FROM ${req.params.PROJECT_ID}_installations`;
+    const columns = (await client.query(queryForKeys)).rows
+      .filter(el => !el.column_name.startsWith("cenote") && el.data_type.toLowerCase() === "decimal").map(el => el.column_name);
+    for (const column of columns) {
+      const redisKeyDefault = `${req.params.PROJECT_ID}_installations_${column}`;
+      const redisKeyeeRIS = `${req.params.PROJECT_ID}_installations_${installationId}_${column}_hist`;
+      await r.del(redisKeyDefault);
+      await r.del(redisKeyeeRIS);
+    }
+    const query = `DROP TABLE IF EXISTS ${req.params.PROJECT_ID}_installations`;
     await client.query(query);
     return res.status(204).json({ ok: true });
   } catch (error) {
