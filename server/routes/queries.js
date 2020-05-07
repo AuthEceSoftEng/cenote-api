@@ -944,8 +944,6 @@ router.delete("/eerisTestCleanup", async (req, res) => {
     for (const column of columns) {
       const redisKeyDefault = `${req.params.PROJECT_ID}_installations_${column}`;
       const redisKeyeeRIS = `${req.params.PROJECT_ID}_installations_${installationId}_${column}_hist`;
-      console.log(redisKeyDefault);
-      console.log(redisKeyeeRIS);
       await r.del(redisKeyDefault);
       await r.del(redisKeyeeRIS);
     }
