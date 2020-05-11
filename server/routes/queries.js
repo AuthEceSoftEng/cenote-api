@@ -787,13 +787,13 @@ router.get("/eeris", canAccessForCollection, (req, res) => Project.findOne({ pro
   .exec(async (err2, project) => {
     try {
       if (err2 || !project) return res.status(404).json({ ok: false, results: "ProjectNotFoundError" });
-      const { readKey, masterKey, event_collection, target_property, installationId, type, dt } = req.query;
+      const { readKey, masterKey, event_collection, target_property, type, dt } = req.query;
       if (!target_property) return res.status(400).json({ ok: false, results: "TargetNotProvidedError" });
       if (!(readKey === project.readKey || masterKey === project.masterKey)) {
         return res.status(401).json({ ok: false, results: "KeyNotAuthorizedError" });
       }
 
-      const keyName = `${`${req.params.PROJECT_ID}_${event_collection}_${installationId}_${target_property}`}_hist`;
+      const keyName = `${`${req.params.PROJECT_ID}_${event_collection}_${target_property}`}_hist`;
       const date = dt ? new Date(dt) : new Date();
       const values = [];
       const stats = {};
@@ -937,17 +937,17 @@ router.delete("/testCleanup", async (req, res) => {
 
 router.delete("/eerisTestCleanup", async (req, res) => {
   try {
-    const { installationId } = req.query;
-    const queryForKeys = `SHOW COLUMNS FROM ${req.params.PROJECT_ID}_installations`;
+    const { eventCollection } = req.query;
+    const queryForKeys = `SHOW COLUMNS FROM ${req.params.PROJECT_ID}_${eventCollection}`;
     const columns = (await client.query(queryForKeys)).rows
       .filter(el => !el.column_name.startsWith("cenote") && el.data_type.toLowerCase() === "decimal").map(el => el.column_name);
     for (const column of columns) {
-      const redisKeyDefault = `${req.params.PROJECT_ID}_installations_${column}`;
-      const redisKeyeeRIS = `${req.params.PROJECT_ID}_installations_${installationId}_${column}_hist`;
+      const redisKeyDefault = `${req.params.PROJECT_ID}_${eventCollection}_${column}`;
+      const redisKeyeeRIS = `${req.params.PROJECT_ID}_${eventCollection}_${column}_hist`;
       await r.del(redisKeyDefault);
       await r.del(redisKeyeeRIS);
     }
-    const query = `DROP TABLE IF EXISTS ${req.params.PROJECT_ID}_installations`;
+    const query = `DROP TABLE IF EXISTS ${req.params.PROJECT_ID}_${eventCollection}`;
     await client.query(query);
     return res.status(204).json({ ok: true });
   } catch (error) {
