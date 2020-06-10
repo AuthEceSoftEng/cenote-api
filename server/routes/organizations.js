@@ -49,8 +49,8 @@ router.post("/password", (req, res) => {
             pool: true,
             host: "olympus.ee.auth.gr",
             port: 587,
-            requireTLS: true,
-            auth: { organization: "protipa@issel.ee.auth.gr", pass: "qW5Rj3CZbmsN" },
+            secure: false, // true for 465, false for other ports
+            auth: { user: process.env.NODEMAILER_USER, pass: process.env.NODEMAILER_PASS },
           });
           const message = {
             from: "cenote System <no-reply@issel.ee.auth.gr>",
@@ -132,8 +132,8 @@ router.post("/reset", (req, res) => {
         pool: true,
         host: "olympus.ee.auth.gr",
         port: 587,
-        requireTLS: true,
-        auth: { organization: "protipa@issel.ee.auth.gr", pass: "qW5Rj3CZbmsN" },
+        secure: false, // true for 465, false for other ports
+        auth: { user: process.env.NODEMAILER_USER, pass: process.env.NODEMAILER_PASS },
       });
       const message = {
         from: "cenote System <no-reply@issel.ee.auth.gr>",
