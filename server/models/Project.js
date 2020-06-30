@@ -1,6 +1,6 @@
 const R = require("ramda");
 const mongoose = require("mongoose");
-const immutablePlugin = require("mongoose-immutable");
+const immutablePlugin = require("mongoose-immutable-plugin");
 const uuid = require("uuid/v4");
 
 const pid = () => `pid${uuid().replace(/-/g, "").slice(0, 11)}`;

@@ -3,7 +3,6 @@ const passport = require("passport");
 const session = require("express-session");
 const MongoStore = require("connect-mongodb-session")(session);
 const uuid = require("uuid");
-const mongoose = require("mongoose");
 
 const Strategies = require("./strategies");
 const { Organization } = require("../models");
@@ -11,7 +10,6 @@ const { Organization } = require("../models");
 module.exports = (app) => {
   const sessionConfig = {
     store: new MongoStore({
-      mongooseConnection: mongoose.connection,
       collection: "sessions",
       uri: process.env.DATABASE_STORE,
     }),

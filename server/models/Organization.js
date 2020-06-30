@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const { MongooseAutoIncrementID } = require("mongoose-auto-increment-reworked");
-const immutablePlugin = require("mongoose-immutable");
+const immutablePlugin = require("mongoose-immutable-plugin");
 const bcrypt = require("bcryptjs");
 const R = require("ramda");
 const uuid = require("uuid/v4");
