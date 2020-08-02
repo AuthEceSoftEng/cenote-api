@@ -793,7 +793,7 @@ router.get("/eeris", canAccessForCollection, (req, res) => Project.findOne({ pro
         return res.status(401).json({ ok: false, results: "KeyNotAuthorizedError" });
       }
 
-      const keyName = `${`${req.params.PROJECT_ID}_${event_collection}_${target_property}`}_hist`;
+      const keyName = `${req.params.PROJECT_ID}_${event_collection}_${target_property}_hist`;
       const date = dt ? new Date(dt) : new Date();
       const values = [];
       const stats = {};
@@ -895,6 +895,7 @@ router.delete("/dropColumn", requireAuth, async (req, res) => {
     const redisKey = `${req.params.PROJECT_ID}_${req.body.event_collection}_${req.body.columnToDrop}`;
     await client.query(query);
     await r.del(redisKey);
+    await r.del(`${redisKey}_hist`);
     return res.status(202).json({ ok: true });
   } catch (error) {
     return res.status(400).json({ ok: false, results: "BadQueryError", message: error.message });
@@ -909,6 +910,7 @@ router.delete("/dropTable", requireAuth, async (req, res) => {
     for (const column of columns) {
       const redisKey = `${req.params.PROJECT_ID}_${req.body.event_collection}_${column}`;
       await r.del(redisKey);
+      await r.del(`${redisKey}_hist`);
     }
     const query = `DROP TABLE IF EXISTS ${req.params.PROJECT_ID}_${req.body.event_collection}`;
     await client.query(query);
