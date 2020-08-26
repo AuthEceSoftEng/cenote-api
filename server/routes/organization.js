@@ -1,8 +1,19 @@
 const express = require("express");
-
+const { Pool } = require("pg");
+const asyncRedis = require("async-redis");
 const { Organization, Project } = require("../models");
 
 const router = express.Router();
+
+const client = new Pool({
+  user: "cockroach",
+  host: process.env.COCKROACH_URL,
+  database: process.env.COCKROACH_DBNAME || "cenote",
+  port: process.env.COCKROACH_PORT || 26257,
+});
+client.connect(err => err && console.error(err));
+const r = asyncRedis.createClient({ host: process.env.REDIS_URL, port: process.env.REDIS_PORT || 6379, password: process.env.REDIS_PASSWORD });
+r.on("error", err => console.error(`Redis error: ${err}`));
 
 /**
  * @apiDefine OrganizationNotFoundError
@@ -195,11 +206,23 @@ router.put("/:ORG_NAME/projects/:PROJECT_ID", (req, res) => {
 * @apiUse KeyNotAuthorizedError
 */
 router.delete("/:ORG_NAME/projects/:PROJECT_ID", (req, res) => {
-  Organization.findOne({ username: req.params.ORG_NAME }, {}, { lean: true }, (err, org) => {
+  Organization.findOne({ username: req.params.ORG_NAME }, {}, { lean: true }, async (err, org) => {
     if (err || !org) return res.status(404).json({ error: "OrganizationNotFoundError" });
     const orgKey = req.headers.authorization;
     if (!orgKey) return res.status(403).json({ error: "NoCredentialsSentError" });
     if (orgKey !== org.organizationId) return res.status(401).json({ error: "KeyNotAuthorizedError" });
+    const selectQuery = "SELECT * from information_schema.columns WHERE table_schema='public'";
+    await client.query(selectQuery)
+      .then(({ rows: answer }) => {
+        answer.filter(el => el.table_name.startsWith(req.params.PROJECT_ID)).forEach((prop) => {
+          const DropTableQuery = `DROP TABLE IF EXISTS ${prop.table_name}`;
+          client.query(DropTableQuery);
+          const redisKey = `${prop.table_name}_${prop.column_name}`;
+          r.del(redisKey);
+          r.del(`${redisKey}_hist`);
+        });
+      })
+      .catch(err3 => res.status(400).json({ ok: false, results: "BadQueryError", message: err3.message }));
     return Project.findOneAndDelete({ organization: org._id, projectId: req.params.PROJECT_ID }, { lean: true }, (err2, project) => {
       if (err2 || !project) return res.status(404).json({ error: "ProjectNotFoundError" });
       return res.status(200).json({ message: "Project successfully deleted!", project });

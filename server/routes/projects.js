@@ -1,5 +1,6 @@
 const express = require("express");
-
+const { Pool } = require("pg");
+const asyncRedis = require("async-redis");
 const { requireAuth } = require("./middleware");
 const { Project, Organization } = require("../models");
 const queries = require("./queries");
@@ -7,6 +8,16 @@ const keys = require("./keys");
 const alter = require("./alter");
 
 const router = express.Router();
+
+const client = new Pool({
+  user: "cockroach",
+  host: process.env.COCKROACH_URL,
+  database: process.env.COCKROACH_DBNAME || "cenote",
+  port: process.env.COCKROACH_PORT || 26257,
+});
+client.connect(err => err && console.error(err));
+const r = asyncRedis.createClient({ host: process.env.REDIS_URL, port: process.env.REDIS_PORT || 6379, password: process.env.REDIS_PASSWORD });
+r.on("error", err => console.error(`Redis error: ${err}`));
 
 router.get("/", requireAuth, (req, res) => {
   Project.find({ $or: [{ organization: req.user._id }, { collaborators: req.user._id }] }).populate("organization").exec((err, projects) => {
@@ -89,8 +100,20 @@ router.put("/", requireAuth, (req, res) => {
     });
 });
 
-router.delete("/", requireAuth, (req, res) => {
+router.delete("/", requireAuth, async (req, res) => {
   const { projectId } = req.body;
+  const selectQuery = "SELECT * from information_schema.columns WHERE table_schema='public'";
+  await client.query(selectQuery)
+    .then(({ rows: answer }) => {
+      answer.filter(el => el.table_name.startsWith(projectId)).forEach((prop) => {
+        const DropTableQuery = `DROP TABLE IF EXISTS ${prop.table_name}`;
+        client.query(DropTableQuery);
+        const redisKey = `${prop.table_name}_${prop.column_name}`;
+        r.del(redisKey);
+        r.del(`${redisKey}_hist`);
+      });
+    })
+    .catch(err3 => res.status(400).json({ ok: false, results: "BadQueryError", message: err3.message }));
   Project.deleteOne({ projectId }, (err) => {
     if (err) return res.status(400).send({ message: "Delete project failed", err });
     return res.send({ message: "Project successfully deleted" });
