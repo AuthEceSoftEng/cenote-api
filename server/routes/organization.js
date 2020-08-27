@@ -211,20 +211,20 @@ router.delete("/:ORG_NAME/projects/:PROJECT_ID", (req, res) => {
     const orgKey = req.headers.authorization;
     if (!orgKey) return res.status(403).json({ error: "NoCredentialsSentError" });
     if (orgKey !== org.organizationId) return res.status(401).json({ error: "KeyNotAuthorizedError" });
-    const selectQuery = "SELECT * from information_schema.columns WHERE table_schema='public'";
-    await client.query(selectQuery)
-      .then(({ rows: answer }) => {
-        answer.filter(el => el.table_name.startsWith(req.params.PROJECT_ID)).forEach((prop) => {
-          const DropTableQuery = `DROP TABLE IF EXISTS ${prop.table_name}`;
-          client.query(DropTableQuery);
-          const redisKey = `${prop.table_name}_${prop.column_name}`;
-          r.del(redisKey);
-          r.del(`${redisKey}_hist`);
-        });
-      })
-      .catch(err3 => res.status(400).json({ ok: false, results: "BadQueryError", message: err3.message }));
     return Project.findOneAndDelete({ organization: org._id, projectId: req.params.PROJECT_ID }, { lean: true }, (err2, project) => {
       if (err2 || !project) return res.status(404).json({ error: "ProjectNotFoundError" });
+      const selectQuery = "SELECT * from information_schema.columns WHERE table_schema='public'";
+      client.query(selectQuery)
+        .then(({ rows: answer }) => {
+          answer.filter(el => el.table_name.startsWith(req.params.PROJECT_ID)).forEach((prop) => {
+            const DropTableQuery = `DROP TABLE IF EXISTS ${prop.table_name}`;
+            client.query(DropTableQuery);
+            const redisKey = `${prop.table_name}_${prop.column_name}`;
+            r.del(redisKey);
+            r.del(`${redisKey}_hist`);
+          });
+        })
+        .catch(err3 => res.status(400).json({ ok: false, results: "BadQueryError", message: err3.message }));
       return res.status(200).json({ message: "Project successfully deleted!", project });
     });
   });

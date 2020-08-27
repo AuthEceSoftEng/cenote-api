@@ -100,22 +100,22 @@ router.put("/", requireAuth, (req, res) => {
     });
 });
 
-router.delete("/", requireAuth, async (req, res) => {
+router.delete("/", requireAuth, (req, res) => {
   const { projectId } = req.body;
-  const selectQuery = "SELECT * from information_schema.columns WHERE table_schema='public'";
-  await client.query(selectQuery)
-    .then(({ rows: answer }) => {
-      answer.filter(el => el.table_name.startsWith(projectId)).forEach((prop) => {
-        const DropTableQuery = `DROP TABLE IF EXISTS ${prop.table_name}`;
-        client.query(DropTableQuery);
-        const redisKey = `${prop.table_name}_${prop.column_name}`;
-        r.del(redisKey);
-        r.del(`${redisKey}_hist`);
-      });
-    })
-    .catch(err3 => res.status(400).json({ ok: false, results: "BadQueryError", message: err3.message }));
   Project.deleteOne({ projectId }, (err) => {
     if (err) return res.status(400).send({ message: "Delete project failed", err });
+    const selectQuery = "SELECT * from information_schema.columns WHERE table_schema='public'";
+    client.query(selectQuery)
+      .then(({ rows: answer }) => {
+        answer.filter(el => el.table_name.startsWith(projectId)).forEach((prop) => {
+          const DropTableQuery = `DROP TABLE IF EXISTS ${prop.table_name}`;
+          client.query(DropTableQuery);
+          const redisKey = `${prop.table_name}_${prop.column_name}`;
+          r.del(redisKey);
+          r.del(`${redisKey}_hist`);
+        });
+      })
+      .catch(err3 => res.status(400).json({ ok: false, results: "BadQueryError", message: err3.message }));
     return res.send({ message: "Project successfully deleted" });
   });
 });
