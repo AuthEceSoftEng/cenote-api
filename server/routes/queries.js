@@ -912,7 +912,7 @@ router.delete("/dropTable", requireAuth, async (req, res) => {
       await r.del(redisKey);
       await r.del(`${redisKey}_hist`);
     }
-    const query = `DROP TABLE IF EXISTS ${req.params.PROJECT_ID}_${req.body.event_collection}`;
+    const query = `ALTER TABLE IF EXISTS ${req.params.PROJECT_ID}_${req.body.event_collection} RENAME TO deleted_${req.params.PROJECT_ID}_${req.body.event_collection}`;
     await client.query(query);
     return res.status(202).json({ ok: true });
   } catch (error) {

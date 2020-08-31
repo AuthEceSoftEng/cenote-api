@@ -108,8 +108,8 @@ router.delete("/", requireAuth, (req, res) => {
     client.query(selectQuery)
       .then(({ rows: answer }) => {
         answer.filter(el => el.table_name.startsWith(projectId)).forEach((prop) => {
-          const DropTableQuery = `DROP TABLE IF EXISTS ${prop.table_name}`;
-          client.query(DropTableQuery);
+          const renameTableQuery = `ALTER TABLE IF EXISTS ${prop.table_name} RENAME TO deleted_${prop.table_name}`;
+          client.query(renameTableQuery);
           const redisKey = `${prop.table_name}_${prop.column_name}`;
           r.del(redisKey);
           r.del(`${redisKey}_hist`);
