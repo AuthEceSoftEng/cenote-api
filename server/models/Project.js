@@ -15,6 +15,7 @@ const projectSchema = new mongoose.Schema({
   readKeys: { type: Array, default: [uuid()] },
   writeKeys: { type: Array, default: [uuid()] },
   masterKeys: { type: Array, default: [uuid()] },
+  redisHist: { type: Boolean, default: false },
 });
 
 projectSchema.plugin(immutablePlugin);

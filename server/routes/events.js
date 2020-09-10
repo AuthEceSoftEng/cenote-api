@@ -132,6 +132,7 @@ router.post("/:EVENT_COLLECTION", (req, res) => Project.findOne({ projectId: req
     }
     cenote.id = uuid();
     payload[i].cenote = { ...cenote };
+    if (project.redisHist) payload[i].redisHist = true;
   }
   try {
     const NUM_OF_SLICES = parseInt(process.env.NUM_OF_SLICES, 10) || 2000;
