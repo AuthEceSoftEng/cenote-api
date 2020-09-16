@@ -922,6 +922,23 @@ router.delete("/dropTable", requireAuth, async (req, res) => {
 
 router.delete("/testCleanup", async (req, res) => {
   try {
+    const queryForKeys = `SHOW COLUMNS FROM ${req.params.PROJECT_ID}_test`;
+    const columns = (await client.query(queryForKeys)).rows
+      .filter(el => !el.column_name.startsWith("cenote") && el.data_type.toLowerCase() === "decimal").map(el => el.column_name);
+    for (const column of columns) {
+      const redisKey = `${req.params.PROJECT_ID}_test_${column}`;
+      await r.del(redisKey);
+    }
+    const query = `DROP TABLE IF EXISTS ${req.params.PROJECT_ID}_test`;
+    await client.query(query);
+    return res.status(204).json({ ok: true });
+  } catch (error) {
+    return res.status(400).json({ ok: false, results: "BadQueryError", message: error.message });
+  }
+});
+
+router.delete("/eerisTestCleanup", async (req, res) => {
+  try {
     const { eventCollection } = req.query;
     const queryForKeys = `SHOW COLUMNS FROM ${req.params.PROJECT_ID}_${eventCollection}`;
     const columns = (await client.query(queryForKeys)).rows
