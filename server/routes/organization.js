@@ -217,7 +217,7 @@ router.delete("/:ORG_NAME/projects/:PROJECT_ID", (req, res) => {
       client.query(selectQuery)
         .then(({ rows: answer }) => {
           answer.filter(el => el.table_name.startsWith(req.params.PROJECT_ID)).forEach((prop) => {
-            const renameTableQuery = `ALTER TABLE IF EXISTS ${prop.table_name} RENAME TO deleted_${prop.table_name}`;
+            const renameTableQuery = `ALTER TABLE IF EXISTS ${prop.table_name} RENAME TO deleted_${prop.table_name}_${Date.now()}`;
             client.query(renameTableQuery);
             const redisKey = `${prop.table_name}_${prop.column_name}`;
             r.del(redisKey);
