@@ -933,7 +933,7 @@ router.delete("/testCleanup", async (req, res) => {
       await r.del(redisKeyeeRIS);
     }
     const query = `DROP TABLE IF EXISTS ${req.params.PROJECT_ID}_${eventCollection}`;
-    await client.query(query);
+    client.query(query);
     return res.status(204).json({ ok: true });
   } catch (error) {
     return res.status(400).json({ ok: false, results: "BadQueryError", message: error.message });
