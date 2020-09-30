@@ -768,14 +768,13 @@ router.get("/extraction", canAccessForCollection, (req, res) => Project.findOne(
 *     {
 *       "ok": true
 *       "results": {
-          "values": [...],
-          "stats": {
-            "avg": 50,
-            "min": 10,
-            "max": 100
-          }
-        }
-    }
+*         "values": [...],
+*         "stats": {
+*           "avg": 50,
+*           "min": 10,
+*           "max": 100
+*         }
+*       }
 *     }
 * @apiUse NoCredentialsSentError
 * @apiUse KeyNotAuthorizedError
@@ -860,6 +859,72 @@ router.get("/eeris", canAccessForCollection, (req, res) => Project.findOne({ pro
       }
 
       const results = { values, stats };
+      return res.json({ ok: true, results });
+    } catch (error) {
+      return res.status(400).json({ ok: false, results: "BadQueryError", message: error.message });
+    }
+  }));
+
+/**
+* @api {get} /projects/:PROJECT_ID/queries/eerisCustom eeRIS Historical Average (Custom Interval - Values Only)
+* @apiVersion 0.1.0
+* @apiName eerisHistAvgCustom
+* @apiGroup Queries
+* @apiParam {String} PROJECT_ID Project's unique ID.
+* @apiParam {String} readKey/masterKey Key for authorized read.
+* @apiParam {String} event_collection Event collection.<br/><strong><u>Note:</u></strong> Event collection names must start with a
+* letter and can contain only lowercase letters and numbers.
+* @apiParam {String} target_property Desired Event collection's property.<br/><strong><u>Note:</u></strong> Property names must start with a
+* letter and can contain only lowercase letters and numbers.
+* @apiParam {String} installationId ID of the installation
+* @apiParam {String} startDate Start date of the interval (YYY-MM-DD)
+* @apiParam {String} endDate End date of the interval (YYYY-MM-DD)
+* @apiSuccess {Boolean} ok If the query succeded.
+* @apiSuccess {Array} results Query result.
+* @apiSuccessExample {json} Success-Response:
+*     HTTP/1.1 200 SUCCESS
+*     {
+*       "ok": true
+*       "results": {
+*        "values": [...],
+*       }
+*     }
+* @apiUse NoCredentialsSentError
+* @apiUse KeyNotAuthorizedError
+* @apiUse ProjectNotFoundError
+* @apiUse TargetNotProvidedError
+* @apiUse BadQueryError
+*/
+router.get("/eerisCustom", canAccessForCollection, (req, res) => Project.findOne({ projectId: req.params.PROJECT_ID }).lean()
+  .exec(async (err2, project) => {
+    try {
+      if (err2 || !project) return res.status(404).json({ ok: false, results: "ProjectNotFoundError" });
+      const { readKey, masterKey, event_collection, target_property, startDate, endDate } = req.query;
+      if (!target_property) return res.status(400).json({ ok: false, results: "TargetNotProvidedError" });
+      if (!(readKey === project.readKey || masterKey === project.masterKey)) {
+        return res.status(401).json({ ok: false, results: "KeyNotAuthorizedError" });
+      }
+      // Check validity of date parameters
+      if (!startDate || !endDate) return res.status(400).json({ ok: false, results: "BadQueryError", message: "`startDate` and `endDate` are required" });
+      const date = new Date(startDate);
+      const finalDate = new Date(endDate);
+      if (date.getTime() > finalDate.getTime()) return res.status(400).json({ ok: false, results: "BadQueryError", message: "`startDate` must precede `endDate`" });
+
+      const keyName = `${req.params.PROJECT_ID}_${event_collection}_${target_property}_hist`;
+      const values = [];
+      const value = await r.get(keyName);
+      const jsonValue = JSON.parse(value);
+      finalDate.setDate(finalDate.getDate() + 1);
+      while (date.getTime() !== finalDate.getTime()) {
+        const year = date.getFullYear();
+        const month = (`0${date.getMonth() + 1}`).slice(-2);
+        const day = (`0${date.getDate()}`).slice(-2);
+        const avg = jsonValue[`avg_${year}-${month}-${day}`] || 0;
+        values.push(avg);
+        date.setDate(date.getDate() + 1);
+      }
+
+      const results = { values };
       return res.json({ ok: true, results });
     } catch (error) {
       return res.status(400).json({ ok: false, results: "BadQueryError", message: error.message });
