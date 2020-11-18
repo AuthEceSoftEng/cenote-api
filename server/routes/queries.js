@@ -52,6 +52,24 @@ r.on("error", err => console.error(`Redis error: ${err}`));
  *     }
  */
 /**
+ * @apiDefine EventCollectionNotProvidedError
+ * @apiError EventCollectionNotProvidedError The `event_collection` parameter must be provided.
+ * @apiErrorExample {json} EventCollectionNotProvidedError:
+ *     HTTP/1.1 404 Not Found
+ *     {
+ *       "error": "EventCollectionNotProvidedError"
+ *     }
+ */
+/**
+ * @apiDefine TypeNotProvidedError
+ * @apiError TypeNotProvidedError The `type` parameter must be provided.
+ * @apiErrorExample {json} TypeNotProvidedError:
+ *     HTTP/1.1 404 Not Found
+ *     {
+ *       "error": "TypeNotProvidedError"
+ *     }
+ */
+/**
 * @api {get} /projects/:PROJECT_ID/queries/count Count
 * @apiVersion 0.1.0
 * @apiName QueryCount
@@ -748,9 +766,9 @@ router.get("/extraction", canAccessForCollection, (req, res) => Project.findOne(
   }));
 
 /**
-* @api {get} /projects/:PROJECT_ID/queries/eeris eeRIS Historical Average
+* @api {get} /projects/:PROJECT_ID/queries/historical Historical Aggregates
 * @apiVersion 0.1.0
-* @apiName eerisHistAvg
+* @apiName historical
 * @apiGroup Queries
 * @apiParam {String} PROJECT_ID Project's unique ID.
 * @apiParam {String} readKey/masterKey Key for authorized read.
@@ -780,78 +798,114 @@ router.get("/extraction", canAccessForCollection, (req, res) => Project.findOne(
 * @apiUse KeyNotAuthorizedError
 * @apiUse ProjectNotFoundError
 * @apiUse TargetNotProvidedError
+* @apiUse EventCollectionNotProvidedError
+* @apiUse TypeNotProvidedError
 * @apiUse BadQueryError
 */
-router.get("/eeris", canAccessForCollection, (req, res) => Project.findOne({ projectId: req.params.PROJECT_ID }).lean()
+router.get("/historical", canAccessForCollection, (req, res) => Project.findOne({ projectId: req.params.PROJECT_ID }).lean()
   .exec(async (err2, project) => {
     try {
       if (err2 || !project) return res.status(404).json({ ok: false, results: "ProjectNotFoundError" });
-      const { readKey, masterKey, event_collection, target_property, type, dt } = req.query;
-      if (!target_property) return res.status(400).json({ ok: false, results: "TargetNotProvidedError" });
+      if (!project.redisHist) {
+        return res.status(400).json({
+          ok: false,
+          results: "BadQueryError",
+          message: "The caching of historical aggregates is not switched on for this project.",
+        });
+      }
+      const { readKey, masterKey, event_collection, target_property, type, dt, startDate, endDate } = req.query;
       if (!(readKey === project.readKey || masterKey === project.masterKey)) {
         return res.status(401).json({ ok: false, results: "KeyNotAuthorizedError" });
       }
-
+      if (!event_collection) return res.status(400).json({ ok: false, results: "TargetNotProvidedError" });
+      if (!target_property) return res.status(400).json({ ok: false, results: "EventCollectionNotProvidedError" });
+      if (!type) return res.status(400).json({ ok: false, results: "TypeNotProvidedError" });
+      if (!["week", "month", "day", "custom"].includes(type)) {
+        return res.status(400).json({ ok: false, results: "BadQueryError", message: "`type` must be one of 'week', 'month', 'day' or 'custom'" });
+      }
       const keyName = `${req.params.PROJECT_ID}_${event_collection}_${target_property}_hist`;
+      const value = await r.get(keyName);
+      const jsonValue = JSON.parse(value);
       const date = dt ? new Date(dt) : new Date();
       const values = [];
       const stats = {};
+      stats.min = Number.POSITIVE_INFINITY;
+      stats.max = Number.NEGATIVE_INFINITY;
+      let totalCount = 0;
+      let totalSum = 0;
       switch (type) {
         case "week": {
-          const value = await r.get(keyName);
-          const jsonValue = JSON.parse(value);
-          stats.avg = 0;
-          stats.min = Number.POSITIVE_INFINITY;
-          stats.max = Number.NEGATIVE_INFINITY;
-          let count = 0;
-          let sum = 0;
           for (let i = 0; i < 7; i += 1) {
             const year = date.getFullYear();
             const month = (`0${date.getMonth() + 1}`).slice(-2);
             const day = (`0${date.getDate()}`).slice(-2);
-            count += jsonValue[`count_${year}-${month}-${day}`] || 0;
-            sum += jsonValue[`sum_${year}-${month}-${day}`] || 0;
-            const avg = jsonValue[`avg_${year}-${month}-${day}`] || 0;
-            const min = jsonValue[`min_${year}-${month}-${day}`] || 0;
-            const max = jsonValue[`max_${year}-${month}-${day}`] || 0;
-            values.unshift(avg);
-            if (min < stats.min && min !== 0) stats.min = min;
-            if (max > stats.max) stats.max = max;
+            const dayCount = jsonValue[`count_${year}-${month}-${day}`] || 0;
+            const daySum = jsonValue[`sum_${year}-${month}-${day}`] || 0;
+            const dayAvg = dayCount !== 0 ? daySum / dayCount : 0;
+            values.unshift(parseInt(dayAvg, 10));
+            totalCount += dayCount;
+            totalSum += daySum;
+            if (dayAvg < stats.min) stats.min = parseInt(dayAvg, 10);
+            if (dayAvg > stats.max) stats.max = parseInt(dayAvg, 10);
             date.setDate(date.getDate() - 1);
           }
-          stats.avg = sum / count;
+          stats.avg = totalCount !== 0 ? parseInt((totalSum / totalCount), 10) : 0;
           break;
         }
         case "month": {
-          const value = await r.get(keyName);
-          const jsonValue = JSON.parse(value);
           const year = date.getFullYear();
           const month = (`0${date.getMonth() + 1}`).slice(-2);
-          stats.avg = jsonValue[`avg_${year}-${month}`] || 0;
-          stats.min = jsonValue[`min_${year}-${month}`] || 0;
-          stats.max = jsonValue[`max_${year}-${month}`] || 0;
           while (date.getMonth() === new Date().getMonth()) {
             const day = (`0${date.getDate()}`).slice(-2);
-            values.unshift(jsonValue[`avg_${year}-${month}-${day}`] || 0);
+            const dayCount = jsonValue[`count_${year}-${month}-${day}`] || 0;
+            const daySum = jsonValue[`sum_${year}-${month}-${day}`] || 0;
+            const dayAvg = dayCount !== 0 ? daySum / dayCount : 0;
+            totalCount += dayCount;
+            totalSum += daySum;
+            if (dayAvg < stats.min) stats.min = parseInt(dayAvg, 10);
+            if (dayAvg > stats.max) stats.max = parseInt(dayAvg, 10);
+            values.unshift(parseInt(dayAvg, 10));
             date.setDate(date.getDate() - 1);
           }
+          stats.avg = totalCount !== 0 ? parseInt((totalSum / totalCount), 10) : 0;
           break;
         }
         case "day": {
-          const value = await r.get(keyName);
-          const jsonValue = JSON.parse(value);
           date.setHours(0);
           const year = date.getFullYear();
           const month = (`0${date.getMonth() + 1}`).slice(-2);
           while (date.getDate() === new Date(dt).getDate()) {
             const day = (`0${date.getDate()}`).slice(-2);
             const hours = (`0${date.getHours()}`).slice(-2);
-            values.push(jsonValue[`avg_${year}-${month}-${day}_${hours}`] || 0);
+            const hourCount = jsonValue[`count_${year}-${month}-${day}_${hours}`] || 0;
+            const hourSum = jsonValue[`sum_${year}-${month}-${day}_${hours}`] || 0;
+            const hourAvg = hourCount !== 0 ? hourSum / hourCount : 0;
+            values.push(parseInt(hourAvg, 10));
+            if (hourAvg < stats.min) stats.min = parseInt(hourAvg, 10);
+            if (hourAvg > stats.max) stats.max = parseInt(hourAvg, 10);
             date.setTime(date.getTime() + (60 * 60 * 1000));
           }
-          stats.avg = jsonValue[`avg_${dt}`] || 0;
-          stats.min = jsonValue[`min_${dt}`] || 0;
-          stats.max = jsonValue[`max_${dt}`] || 0;
+          const dayCount = jsonValue[`count_${dt}`] || 0;
+          const daySum = jsonValue[`sum_${dt}`] || 0;
+          stats.avg = dayCount !== 0 ? parseInt((daySum / dayCount), 10) : 0;
+          break;
+        }
+        case "custom": {
+          if (!startDate || !endDate) return res.status(400).json({ ok: false, results: "BadQueryError", message: "`startDate` and `endDate` are required" });
+          const startDt = new Date(startDate);
+          const finalDt = new Date(endDate);
+          if (startDt.getTime() > finalDt.getTime()) return res.status(400).json({ ok: false, results: "BadQueryError", message: "`startDate` must precede `endDate`" });
+          finalDt.setDate(finalDt.getDate() + 1);
+          while (startDt.getTime() < finalDt.getTime()) {
+            const year = startDt.getFullYear();
+            const month = (`0${startDt.getMonth() + 1}`).slice(-2);
+            const day = (`0${startDt.getDate()}`).slice(-2);
+            const dayCount = jsonValue[`count_${year}-${month}-${day}`] || 0;
+            const daySum = jsonValue[`sum_${year}-${month}-${day}`] || 0;
+            const dayAvg = dayCount !== 0 ? daySum / dayCount : 0;
+            values.push(parseInt(dayAvg, 10));
+            startDt.setDate(startDt.getDate() + 1);
+          }
           break;
         }
         default:
@@ -859,72 +913,6 @@ router.get("/eeris", canAccessForCollection, (req, res) => Project.findOne({ pro
       }
 
       const results = { values, stats };
-      return res.json({ ok: true, results });
-    } catch (error) {
-      return res.status(400).json({ ok: false, results: "BadQueryError", message: error.message });
-    }
-  }));
-
-/**
-* @api {get} /projects/:PROJECT_ID/queries/eerisCustom eeRIS Historical Average (Custom Interval - Values Only)
-* @apiVersion 0.1.0
-* @apiName eerisHistAvgCustom
-* @apiGroup Queries
-* @apiParam {String} PROJECT_ID Project's unique ID.
-* @apiParam {String} readKey/masterKey Key for authorized read.
-* @apiParam {String} event_collection Event collection.<br/><strong><u>Note:</u></strong> Event collection names must start with a
-* letter and can contain only lowercase letters and numbers.
-* @apiParam {String} target_property Desired Event collection's property.<br/><strong><u>Note:</u></strong> Property names must start with a
-* letter and can contain only lowercase letters and numbers.
-* @apiParam {String} installationId ID of the installation
-* @apiParam {String} startDate Start date of the interval (YYY-MM-DD)
-* @apiParam {String} endDate End date of the interval (YYYY-MM-DD)
-* @apiSuccess {Boolean} ok If the query succeded.
-* @apiSuccess {Array} results Query result.
-* @apiSuccessExample {json} Success-Response:
-*     HTTP/1.1 200 SUCCESS
-*     {
-*       "ok": true
-*       "results": {
-*        "values": [...],
-*       }
-*     }
-* @apiUse NoCredentialsSentError
-* @apiUse KeyNotAuthorizedError
-* @apiUse ProjectNotFoundError
-* @apiUse TargetNotProvidedError
-* @apiUse BadQueryError
-*/
-router.get("/eerisCustom", canAccessForCollection, (req, res) => Project.findOne({ projectId: req.params.PROJECT_ID }).lean()
-  .exec(async (err2, project) => {
-    try {
-      if (err2 || !project) return res.status(404).json({ ok: false, results: "ProjectNotFoundError" });
-      const { readKey, masterKey, event_collection, target_property, startDate, endDate } = req.query;
-      if (!target_property) return res.status(400).json({ ok: false, results: "TargetNotProvidedError" });
-      if (!(readKey === project.readKey || masterKey === project.masterKey)) {
-        return res.status(401).json({ ok: false, results: "KeyNotAuthorizedError" });
-      }
-      // Check validity of date parameters
-      if (!startDate || !endDate) return res.status(400).json({ ok: false, results: "BadQueryError", message: "`startDate` and `endDate` are required" });
-      const date = new Date(startDate);
-      const finalDate = new Date(endDate);
-      if (date.getTime() > finalDate.getTime()) return res.status(400).json({ ok: false, results: "BadQueryError", message: "`startDate` must precede `endDate`" });
-
-      const keyName = `${req.params.PROJECT_ID}_${event_collection}_${target_property}_hist`;
-      const values = [];
-      const value = await r.get(keyName);
-      const jsonValue = JSON.parse(value);
-      finalDate.setDate(finalDate.getDate() + 1);
-      while (date.getTime() !== finalDate.getTime()) {
-        const year = date.getFullYear();
-        const month = (`0${date.getMonth() + 1}`).slice(-2);
-        const day = (`0${date.getDate()}`).slice(-2);
-        const avg = jsonValue[`avg_${year}-${month}-${day}`] || 0;
-        values.push(avg);
-        date.setDate(date.getDate() + 1);
-      }
-
-      const results = { values };
       return res.json({ ok: true, results });
     } catch (error) {
       return res.status(400).json({ ok: false, results: "BadQueryError", message: error.message });
