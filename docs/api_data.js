@@ -3402,21 +3402,14 @@ define({ "api": [
             "type": "String",
             "optional": false,
             "field": "target_property",
-            "description": "<p>Desired Event collection's property.<br/><strong><u>Note:</u></strong> Property names must start with a letter and can contain only lowercase letters and numbers.</p>"
-          },
-          {
-            "group": "Parameter",
-            "type": "String",
-            "optional": false,
-            "field": "installationId",
-            "description": "<p>ID of the installation</p>"
+            "description": "<p>Desired event collection's property.<br/><strong><u>Note:</u></strong> Property names must start with a letter and can contain only lowercase letters and numbers.</p>"
           },
           {
             "group": "Parameter",
             "type": "String",
             "optional": false,
             "field": "type",
-            "description": "<p>Type of query (week, month, day)</p>"
+            "description": "<p>Type of query (week, month, day, custom)</p>"
           },
           {
             "group": "Parameter",
@@ -3424,6 +3417,20 @@ define({ "api": [
             "optional": false,
             "field": "dt",
             "description": "<p>Date of specific day in case of day query. Format: YYYY-MM-DD</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "startDate",
+            "description": "<p>Start date for custom query. Format: YYYY-MM-DD</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "endDate",
+            "description": "<p>End date for custom query. Format: YYYY-MM-DD</p>"
           }
         ]
       }

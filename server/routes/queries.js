@@ -774,11 +774,12 @@ router.get("/extraction", canAccessForCollection, (req, res) => Project.findOne(
 * @apiParam {String} readKey/masterKey Key for authorized read.
 * @apiParam {String} event_collection Event collection.<br/><strong><u>Note:</u></strong> Event collection names must start with a
 * letter and can contain only lowercase letters and numbers.
-* @apiParam {String} target_property Desired Event collection's property.<br/><strong><u>Note:</u></strong> Property names must start with a
+* @apiParam {String} target_property Desired event collection's property.<br/><strong><u>Note:</u></strong> Property names must start with a
 * letter and can contain only lowercase letters and numbers.
-* @apiParam {String} installationId ID of the installation
-* @apiParam {String} type Type of query (week, month, day)
+* @apiParam {String} type Type of query (week, month, day, custom)
 * @apiParam {String} dt Date of specific day in case of day query. Format: YYYY-MM-DD
+* @apiParam {String} startDate Start date for custom query. Format: YYYY-MM-DD
+* @apiParam {String} endDate End date for custom query. Format: YYYY-MM-DD
 * @apiSuccess {Boolean} ok If the query succeded.
 * @apiSuccess {Array} results Query result.
 * @apiSuccessExample {json} Success-Response:
