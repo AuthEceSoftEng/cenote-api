@@ -810,7 +810,7 @@ router.get("/historical", canAccessForCollection, (req, res) => Project.findOne(
         return res.status(400).json({
           ok: false,
           results: "BadQueryError",
-          message: "The caching of historical aggregates is not switched on for this project.",
+          message: "The caching of historical aggregates is not activated for this project.",
         });
       }
       const { readKey, masterKey, event_collection, target_property, type, dt, startDate, endDate } = req.query;
