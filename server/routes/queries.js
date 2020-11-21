@@ -766,7 +766,7 @@ router.get("/extraction", canAccessForCollection, (req, res) => Project.findOne(
   }));
 
 /**
-* @api {get} /projects/:PROJECT_ID/queries/historical Historical Aggregates
+* @api {get} /projects/:PROJECT_ID/queries/eeris/historical Historical Aggregates for eeRIS
 * @apiVersion 0.1.0
 * @apiName historical
 * @apiGroup Queries
@@ -803,23 +803,16 @@ router.get("/extraction", canAccessForCollection, (req, res) => Project.findOne(
 * @apiUse TypeNotProvidedError
 * @apiUse BadQueryError
 */
-router.get("/historical", canAccessForCollection, (req, res) => Project.findOne({ projectId: req.params.PROJECT_ID }).lean()
+router.get("/eeris/historical", canAccessForCollection, (req, res) => Project.findOne({ projectId: req.params.PROJECT_ID }).lean()
   .exec(async (err2, project) => {
     try {
       if (err2 || !project) return res.status(404).json({ ok: false, results: "ProjectNotFoundError" });
-      if (!project.redisHist) {
-        return res.status(400).json({
-          ok: false,
-          results: "BadQueryError",
-          message: "The caching of historical aggregates is not activated for this project.",
-        });
-      }
       const { readKey, masterKey, event_collection, target_property, type, dt, startDate, endDate } = req.query;
       if (!(readKey === project.readKey || masterKey === project.masterKey)) {
         return res.status(401).json({ ok: false, results: "KeyNotAuthorizedError" });
       }
-      if (!event_collection) return res.status(400).json({ ok: false, results: "TargetNotProvidedError" });
-      if (!target_property) return res.status(400).json({ ok: false, results: "EventCollectionNotProvidedError" });
+      if (!event_collection) return res.status(400).json({ ok: false, results: "EventCollectionNotProvidedError" });
+      if (!target_property) return res.status(400).json({ ok: false, results: "TargetNotProvidedError" });
       if (!type) return res.status(400).json({ ok: false, results: "TypeNotProvidedError" });
       if (!["week", "month", "day", "custom"].includes(type)) {
         return res.status(400).json({ ok: false, results: "BadQueryError", message: "`type` must be one of 'week', 'month', 'day' or 'custom'" });
@@ -827,7 +820,7 @@ router.get("/historical", canAccessForCollection, (req, res) => Project.findOne(
       const keyName = `${req.params.PROJECT_ID}_${event_collection}_${target_property}_hist`;
       const value = await r.get(keyName);
       const jsonValue = JSON.parse(value);
-      const date = dt ? new Date(dt) : new Date();
+      const date = type === "day" ? new Date(dt) : new Date();
       const values = [];
       const stats = {};
       stats.min = Number.POSITIVE_INFINITY;

@@ -3368,8 +3368,8 @@
   },
   {
     "type": "get",
-    "url": "/projects/:PROJECT_ID/queries/historical",
-    "title": "Historical Aggregates",
+    "url": "/projects/:PROJECT_ID/queries/eeris/historical",
+    "title": "Historical Aggregates for eeRIS",
     "version": "0.1.0",
     "name": "historical",
     "group": "Queries",

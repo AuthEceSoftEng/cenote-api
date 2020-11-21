@@ -119,7 +119,6 @@ router.post("/:EVENT_COLLECTION", (req, res) => Project.findOne({ projectId: req
     id: uuid(),
     url: `/projects/${req.params.PROJECT_ID}/events/${req.params.EVENT_COLLECTION.replace(/-/g, "").toLowerCase()}`,
   };
-  if (project.redisHist) cenote.redisHist = true;
   if (!Array.isArray(payload)) payload = [payload];
   let shouldShowWarningForTimestamp = false;
   for (let i = 0; i < payload.length; i += 1) {
