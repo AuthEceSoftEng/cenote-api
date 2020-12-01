@@ -2,7 +2,6 @@ const express = require("express");
 const uuid = require("uuid/v4");
 
 const { Project } = require("../models");
-
 const { requireAuth } = require("./middleware");
 
 const router = express.Router({ mergeParams: true });
@@ -26,8 +25,8 @@ const router = express.Router({ mergeParams: true });
 * @apiUse ProjectNotFoundError
 */
 router.get("/", (req, res) => Project.findOne({ projectId: req.params.PROJECT_ID }, {}, { lean: true }, (err2, project) => {
-	if (err2 || !project) return res.status(404).json({ error: "ProjectNotFoundError" });
-	return res.json({ readKeys: project.readKeys, writeKeys: project.writeKeys, masterKeys: project.masterKeys });
+  if (err2 || !project) return res.status(404).json({ error: "ProjectNotFoundError" });
+  return res.json({ readKeys: project.readKeys, writeKeys: project.writeKeys, masterKeys: project.masterKeys });
 }));
 
 /**
@@ -58,11 +57,11 @@ router.get("/", (req, res) => Project.findOne({ projectId: req.params.PROJECT_ID
 * @apiUse KeyNotFoundError
 */
 router.get("/:KEY", (req, res) => Project.findOne({ projectId: req.params.PROJECT_ID }, {}, { lean: true }, (err2, project) => {
-	if (err2 || !project) return res.status(404).json({ error: "ProjectNotFoundError" });
-	if (project.readKeys.includes(req.params.key)) return res.json({ type: "read", active: true });
-	if (project.writeKeys.includes(req.params.key)) return res.json({ type: "write", active: true });
-	if (project.masterKeys.includes(req.params.key)) return res.json({ type: "master", active: true });
-	return res.status(404).json({ error: "KeyNotFoundError" });
+  if (err2 || !project) return res.status(404).json({ error: "ProjectNotFoundError" });
+  if (project.readKeys.includes(req.params.key)) return res.json({ type: "read", active: true });
+  if (project.writeKeys.includes(req.params.key)) return res.json({ type: "write", active: true });
+  if (project.masterKeys.includes(req.params.key)) return res.json({ type: "master", active: true });
+  return res.status(404).json({ error: "KeyNotFoundError" });
 }));
 
 /**
@@ -92,43 +91,43 @@ router.get("/:KEY", (req, res) => Project.findOne({ projectId: req.params.PROJEC
 * @apiUse KeyNotFoundError
 */
 router.post("/regenerate", requireAuth, (req, res) => Project.findOne({ projectId: req.params.PROJECT_ID }, (err2, project) => {
-	if (err2 || !project) return res.status(404).json({ error: "ProjectNotFoundError" });
-	const { readKey, writeKey, masterKey } = req.body;
-	if (!readKey && !writeKey && !masterKey) return res.status(403).json({ error: "NoDataSentError" });
-	if (readKey) {
-		if (project.readKeys.includes(readKey)) {
-			const newKey = uuid();
-			project.readKeys[project.readKeys.indexOf(readKey)] = newKey;
-			project.markModified("readKeys");
-			return project.save((err3) => {
-				if (err3) return res.status(500).json({ error: "Internal server error!", err: err3 });
-				return res.json({ message: "Key successfully regenerated!", readKey: newKey });
-			});
-		}
-	}
-	if (writeKey) {
-		if (project.writeKeys.includes(writeKey)) {
-			const newKey = uuid();
-			project.writeKeys[project.writeKeys.indexOf(writeKey)] = newKey;
-			project.markModified("writeKeys");
-			return project.save((err3) => {
-				if (err3) return res.status(500).json({ error: "Internal server error!", err: err3 });
-				return res.json({ message: "Key successfully regenerated!", writeKey: newKey });
-			});
-		}
-	}
-	if (masterKey) {
-		if (project.masterKeys.includes(masterKey)) {
-			const newKey = uuid();
-			project.masterKeys[project.masterKeys.indexOf(masterKey)] = newKey;
-			project.markModified("masterKeys");
-			return project.save((err3) => {
-				if (err3) return res.status(500).json({ error: "Internal server error!", err: err3 });
-				return res.json({ message: "Key successfully regenerated!", masterKey: newKey });
-			});
-		}
-	}
-	return res.status(500).json({ error: "Internal server error!" });
+  if (err2 || !project) return res.status(404).json({ error: "ProjectNotFoundError" });
+  const { readKey, writeKey, masterKey } = req.body;
+  if (!readKey && !writeKey && !masterKey) return res.status(403).json({ error: "NoDataSentError" });
+  if (readKey) {
+    if (project.readKeys.includes(readKey)) {
+      const newKey = uuid();
+      project.readKeys[project.readKeys.indexOf(readKey)] = newKey;
+      project.markModified("readKeys");
+      return project.save((err3) => {
+        if (err3) return res.status(500).json({ error: "Internal server error!", err: err3 });
+        return res.json({ message: "Key successfully regenerated!", readKey: newKey });
+      });
+    }
+  }
+  if (writeKey) {
+    if (project.writeKeys.includes(writeKey)) {
+      const newKey = uuid();
+      project.writeKeys[project.writeKeys.indexOf(writeKey)] = newKey;
+      project.markModified("writeKeys");
+      return project.save((err3) => {
+        if (err3) return res.status(500).json({ error: "Internal server error!", err: err3 });
+        return res.json({ message: "Key successfully regenerated!", writeKey: newKey });
+      });
+    }
+  }
+  if (masterKey) {
+    if (project.masterKeys.includes(masterKey)) {
+      const newKey = uuid();
+      project.masterKeys[project.masterKeys.indexOf(masterKey)] = newKey;
+      project.markModified("masterKeys");
+      return project.save((err3) => {
+        if (err3) return res.status(500).json({ error: "Internal server error!", err: err3 });
+        return res.json({ message: "Key successfully regenerated!", masterKey: newKey });
+      });
+    }
+  }
+  return res.status(500).json({ error: "Internal server error!" });
 }));
 
 /**
@@ -166,34 +165,34 @@ router.post("/regenerate", requireAuth, (req, res) => Project.findOne({ projectI
 * @apiUse AlreadyExistsError
 */
 router.post("/", (req, res) => Project.findOne({ projectId: req.params.PROJECT_ID }, (err2, project) => {
-	if (err2 || !project) return res.status(404).json({ error: "ProjectNotFoundError" });
-	const { readKey, writeKey, masterKey } = req.body;
-	if (!readKey && !writeKey && !masterKey) return res.status(403).json({ error: "NoDataSentError" });
-	if (readKey) {
-		if (project.readKeys.includes(readKey)) return res.status(409).json({ error: "AlreadyExistsError" });
-		project.readKeys.push(readKey);
-		return project.save((err3) => {
-			if (err3) return res.status(500).json({ message: "Internal server error!", err: err3 });
-			return res.status(201).json({ message: "Key successfully created!" });
-		});
-	}
-	if (writeKey) {
-		if (project.writeKeys.includes(writeKey)) return res.status(409).json({ error: "AlreadyExistsError" });
-		project.writeKeys.push(writeKey);
-		return project.save((err3) => {
-			if (err3) return res.status(500).json({ message: "Internal server error!", err: err3 });
-			return res.status(201).json({ message: "Key successfully created!" });
-		});
-	}
-	if (masterKey) {
-		if (project.masterKeys.includes(masterKey)) return res.status(409).json({ error: "AlreadyExistsError" });
-		project.masterKeys.push(masterKey);
-		return project.save((err3) => {
-			if (err3) return res.status(500).json({ message: "Internal server error!", err: err3 });
-			return res.status(201).json({ message: "Key successfully created!" });
-		});
-	}
-	return res.status(500).json({ message: "Internal server error!" });
+  if (err2 || !project) return res.status(404).json({ error: "ProjectNotFoundError" });
+  const { readKey, writeKey, masterKey } = req.body;
+  if (!readKey && !writeKey && !masterKey) return res.status(403).json({ error: "NoDataSentError" });
+  if (readKey) {
+    if (project.readKeys.includes(readKey)) return res.status(409).json({ error: "AlreadyExistsError" });
+    project.readKeys.push(readKey);
+    return project.save((err3) => {
+      if (err3) return res.status(500).json({ message: "Internal server error!", err: err3 });
+      return res.status(201).json({ message: "Key successfully created!" });
+    });
+  }
+  if (writeKey) {
+    if (project.writeKeys.includes(writeKey)) return res.status(409).json({ error: "AlreadyExistsError" });
+    project.writeKeys.push(writeKey);
+    return project.save((err3) => {
+      if (err3) return res.status(500).json({ message: "Internal server error!", err: err3 });
+      return res.status(201).json({ message: "Key successfully created!" });
+    });
+  }
+  if (masterKey) {
+    if (project.masterKeys.includes(masterKey)) return res.status(409).json({ error: "AlreadyExistsError" });
+    project.masterKeys.push(masterKey);
+    return project.save((err3) => {
+      if (err3) return res.status(500).json({ message: "Internal server error!", err: err3 });
+      return res.status(201).json({ message: "Key successfully created!" });
+    });
+  }
+  return res.status(500).json({ message: "Internal server error!" });
 }));
 
 /**
@@ -213,18 +212,18 @@ router.post("/", (req, res) => Project.findOne({ projectId: req.params.PROJECT_I
 * @apiUse NoDataSentError
 */
 router.delete("/:KEY", (req, res) => Project.findOne({ projectId: req.params.PROJECT_ID }, (err2, project) => {
-	if (err2 || !project) {
-		return res.status(404).json({ message: `Can't find project with id ${req.params.PROJECT_ID}!`, err2 });
-	}
-	const key = req.params.KEY;
-	if (!key) return res.status(403).json({ message: "No key sent!" });
-	if (project.readKeys.includes(key)) project.readKeys.splice(project.readKeys.indexOf(key), 1);
-	if (project.writeKeys.includes(key)) project.writeKeys.splice(project.writeKeys.indexOf(key), 1);
-	if (project.masterKeys.includes(key)) project.masterKeys.splice(project.masterKeys.indexOf(key), 1);
-	return project.save((err3) => {
-		if (err3) return res.status(500).json({ message: "Internal server error!" });
-		return res.json({ message: "Key successfully deleted!" });
-	});
+  if (err2 || !project) {
+    return res.status(404).json({ message: `Can't find project with id ${req.params.PROJECT_ID}!`, err2 });
+  }
+  const key = req.params.KEY;
+  if (!key) return res.status(403).json({ message: "No key sent!" });
+  if (project.readKeys.includes(key)) project.readKeys.splice(project.readKeys.indexOf(key), 1);
+  if (project.writeKeys.includes(key)) project.writeKeys.splice(project.writeKeys.indexOf(key), 1);
+  if (project.masterKeys.includes(key)) project.masterKeys.splice(project.masterKeys.indexOf(key), 1);
+  return project.save((err3) => {
+    if (err3) return res.status(500).json({ message: "Internal server error!" });
+    return res.json({ message: "Key successfully deleted!" });
+  });
 }));
 
 module.exports = router;

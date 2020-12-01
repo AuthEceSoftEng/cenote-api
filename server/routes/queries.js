@@ -1,5 +1,3 @@
-/* eslint-disable no-return-assign */
-/* eslint-disable no-negated-condition */
 /* eslint-disable max-len */
 const express = require("express");
 const { Pool, types } = require("pg");
@@ -7,33 +5,32 @@ const asyncRedis = require("async-redis");
 const moment = require("moment");
 
 const { Project } = require("../models");
-const {
-	isJSON,
-	applyFilter,
-	parseTimeframe,
-	groupBy,
-	getFilterQuery,
-	groupByInterval,
-	percentile: percentle,
-	getRemoveOutliersQuery,
-	toObjectOfArrays,
-} = require("../utils");
-
 const { requireAuth, canAccessForCollection } = require("./middleware");
+const {
+  isJSON,
+  applyFilter,
+  parseTimeframe,
+  groupBy,
+  getFilterQuery,
+  groupByInterval,
+  percentile: percentle,
+  getRemoveOutliersQuery,
+  toObjectOfArrays,
+} = require("../utils");
 
 const router = express.Router({ mergeParams: true });
 const client = new Pool({
-	user: "cockroach",
-	host: process.env.COCKROACH_URL,
-	database: process.env.COCKROACH_DBNAME || "cenote",
-	port: process.env.COCKROACH_PORT || 26257,
+  user: "cockroach",
+  host: process.env.COCKROACH_URL,
+  database: process.env.COCKROACH_DBNAME || "cenote",
+  port: process.env.COCKROACH_PORT || 26257,
 });
-client.connect((err) => err && console.error(err));
-types.setTypeParser(20, (val) => Number.parseFloat(val, 10)); // 20 -> int8 (for count, min, etc)
-types.setTypeParser(1700, (val) => Number.parseFloat(val, 10)); // 1700 -> numeric
-types.setTypeParser(1114, (val) => moment(val).valueOf()); // 1114 -> timestamp
+client.connect(err => err && console.error(err));
+types.setTypeParser(20, val => parseFloat(val, 10)); // 20 -> int8 (for count, min, etc)
+types.setTypeParser(1700, val => parseFloat(val, 10)); // 1700 -> numeric
+types.setTypeParser(1114, val => moment(val).valueOf()); // 1114 -> timestamp
 const r = asyncRedis.createClient({ host: process.env.REDIS_URL, port: process.env.REDIS_PORT || 6379, password: process.env.REDIS_PASSWORD });
-r.on("error", (err) => console.error(`Redis error: ${err}`));
+r.on("error", err => console.error(`Redis error: ${err}`));
 
 /**
  * @apiDefine BadQueryError
@@ -111,32 +108,32 @@ r.on("error", (err) => console.error(`Redis error: ${err}`));
 * @apiUse BadQueryError
 */
 router.get("/count", canAccessForCollection, (req, res) => Project.findOne({ projectId: req.params.PROJECT_ID }).lean()
-	.exec(async (err2, project) => {
-		try {
-			if (err2 || !project) return res.status(404).json({ ok: false, results: "ProjectNotFoundError" });
-			const { readKey, masterKey, event_collection, group_by, latest, interval, outliers, outliers_in } = req.query;
-			if (!(readKey === project.readKey || masterKey === project.masterKey)) {
-				return res.status(401).json({ ok: false, results: "KeyNotAuthorizedError" });
-			}
-			let removeOutliersQuery = "";
-			if (["exclude", "only"].includes(outliers)) {
-				if (!outliers_in) return res.status(400).json({ ok: false, results: "TargetNotProvidedError" });
-				removeOutliersQuery += await getRemoveOutliersQuery(r, `${req.params.PROJECT_ID}_${event_collection}`, outliers_in, outliers);
-			}
-			const filters = isJSON(req.query.filters) ? JSON.parse(req.query.filters) : [];
-			const timeframeQuery = parseTimeframe(req.query.timeframe);
-			const filterQuery = getFilterQuery(filters);
-			const query = `SELECT ${interval ? "*" : `${group_by ? `${group_by},` : ""} COUNT(*)`} FROM ${req.params.PROJECT_ID}_${event_collection
-			} ${timeframeQuery} ${removeOutliersQuery} ${filterQuery} ${!interval && group_by ? `GROUP BY ${group_by}` : ""} LIMIT ${latest
+  .exec(async (err2, project) => {
+    try {
+      if (err2 || !project) return res.status(404).json({ ok: false, results: "ProjectNotFoundError" });
+      const { readKey, masterKey, event_collection, group_by, latest, interval, outliers, outliers_in } = req.query;
+      if (!(readKey === project.readKey || masterKey === project.masterKey)) {
+        return res.status(401).json({ ok: false, results: "KeyNotAuthorizedError" });
+      }
+      let removeOutliersQuery = "";
+      if (["exclude", "only"].includes(outliers)) {
+        if (!outliers_in) return res.status(400).json({ ok: false, results: "TargetNotProvidedError" });
+        removeOutliersQuery += await getRemoveOutliersQuery(r, `${req.params.PROJECT_ID}_${event_collection}`, outliers_in, outliers);
+      }
+      const filters = isJSON(req.query.filters) ? JSON.parse(req.query.filters) : [];
+      const timeframeQuery = parseTimeframe(req.query.timeframe);
+      const filterQuery = getFilterQuery(filters);
+      const query = `SELECT ${interval ? "*" : `${group_by ? `${group_by},` : ""} COUNT(*)`} FROM ${req.params.PROJECT_ID}_${event_collection
+      } ${timeframeQuery} ${removeOutliersQuery} ${filterQuery} ${!interval && group_by ? `GROUP BY ${group_by}` : ""} LIMIT ${latest
         || req.app.locals.GLOBAL_LIMIT}`;
-			const { rows: answer } = await client.query(query);
-			let results = JSON.parse(JSON.stringify(answer).replace(/system\.\w*\(|\)/g, ""));
-			if (interval) results = groupByInterval(results, interval, "count");
-			return res.json({ ok: true, results });
-		} catch (error) {
-			return res.status(400).json({ ok: false, results: "BadQueryError", message: error.message });
-		}
-	}));
+      const { rows: answer } = await client.query(query);
+      let results = JSON.parse(JSON.stringify(answer).replace(/system\.\w*\(|\)/g, ""));
+      if (interval) results = groupByInterval(results, interval, "count");
+      return res.json({ ok: true, results });
+    } catch (error) {
+      return res.status(400).json({ ok: false, results: "BadQueryError", message: error.message });
+    }
+  }));
 
 /**
 * @api {get} /projects/:PROJECT_ID/queries/minimum Minimum
@@ -180,33 +177,33 @@ router.get("/count", canAccessForCollection, (req, res) => Project.findOne({ pro
 * @apiUse BadQueryError
 */
 router.get("/minimum", canAccessForCollection, (req, res) => Project.findOne({ projectId: req.params.PROJECT_ID }).lean()
-	.exec(async (err2, project) => {
-		try {
-			if (err2 || !project) return res.status(404).json({ ok: false, results: "ProjectNotFoundError" });
-			const { readKey, masterKey, event_collection, target_property, group_by, latest, interval, outliers, outliers_in } = req.query;
-			if (!target_property) return res.status(400).json({ ok: false, results: "TargetNotProvidedError" });
-			if (!(readKey === project.readKey || masterKey === project.masterKey)) {
-				return res.status(401).json({ ok: false, results: "KeyNotAuthorizedError" });
-			}
-			let removeOutliersQuery = "";
-			if (["exclude", "only"].includes(outliers)) {
-				if (!outliers_in) return res.status(400).json({ ok: false, results: "TargetNotProvidedError" });
-				removeOutliersQuery += await getRemoveOutliersQuery(r, `${req.params.PROJECT_ID}_${event_collection}`, outliers_in, outliers);
-			}
-			const filters = isJSON(req.query.filters) ? JSON.parse(req.query.filters) : [];
-			const timeframeQuery = parseTimeframe(req.query.timeframe);
-			const filterQuery = getFilterQuery(filters);
-			const query = `SELECT ${interval ? "*" : `${group_by ? `${group_by},` : ""} MIN("${target_property}")`} FROM ${req.params.PROJECT_ID
-			}_${event_collection} ${timeframeQuery} ${removeOutliersQuery} ${filterQuery} ${!interval && group_by ? `GROUP BY ${group_by}` : ""} LIMIT ${
-				latest || req.app.locals.GLOBAL_LIMIT}`;
-			const { rows: answer } = await client.query(query);
-			let results = JSON.parse(JSON.stringify(answer).replace(/system\.\w*\(|\)/g, ""));
-			if (interval) results = groupByInterval(results, interval, "minimum", target_property);
-			return res.json({ ok: true, results });
-		} catch (error) {
-			return res.status(400).json({ ok: false, results: "BadQueryError", message: error.message });
-		}
-	}));
+  .exec(async (err2, project) => {
+    try {
+      if (err2 || !project) return res.status(404).json({ ok: false, results: "ProjectNotFoundError" });
+      const { readKey, masterKey, event_collection, target_property, group_by, latest, interval, outliers, outliers_in } = req.query;
+      if (!target_property) return res.status(400).json({ ok: false, results: "TargetNotProvidedError" });
+      if (!(readKey === project.readKey || masterKey === project.masterKey)) {
+        return res.status(401).json({ ok: false, results: "KeyNotAuthorizedError" });
+      }
+      let removeOutliersQuery = "";
+      if (["exclude", "only"].includes(outliers)) {
+        if (!outliers_in) return res.status(400).json({ ok: false, results: "TargetNotProvidedError" });
+        removeOutliersQuery += await getRemoveOutliersQuery(r, `${req.params.PROJECT_ID}_${event_collection}`, outliers_in, outliers);
+      }
+      const filters = isJSON(req.query.filters) ? JSON.parse(req.query.filters) : [];
+      const timeframeQuery = parseTimeframe(req.query.timeframe);
+      const filterQuery = getFilterQuery(filters);
+      const query = `SELECT ${interval ? "*" : `${group_by ? `${group_by},` : ""} MIN("${target_property}")`} FROM ${req.params.PROJECT_ID
+      }_${event_collection} ${timeframeQuery} ${removeOutliersQuery} ${filterQuery} ${!interval && group_by ? `GROUP BY ${group_by}` : ""} LIMIT ${
+        latest || req.app.locals.GLOBAL_LIMIT}`;
+      const { rows: answer } = await client.query(query);
+      let results = JSON.parse(JSON.stringify(answer).replace(/system\.\w*\(|\)/g, ""));
+      if (interval) results = groupByInterval(results, interval, "minimum", target_property);
+      return res.json({ ok: true, results });
+    } catch (error) {
+      return res.status(400).json({ ok: false, results: "BadQueryError", message: error.message });
+    }
+  }));
 
 /**
 * @api {get} /projects/:PROJECT_ID/queries/maximum Maximum
@@ -250,33 +247,33 @@ router.get("/minimum", canAccessForCollection, (req, res) => Project.findOne({ p
 * @apiUse BadQueryError
 */
 router.get("/maximum", canAccessForCollection, (req, res) => Project.findOne({ projectId: req.params.PROJECT_ID }).lean()
-	.exec(async (err2, project) => {
-		try {
-			if (err2 || !project) return res.status(404).json({ ok: false, results: "ProjectNotFoundError" });
-			const { readKey, masterKey, event_collection, target_property, group_by, latest, interval, outliers, outliers_in } = req.query;
-			if (!target_property) return res.status(400).json({ ok: false, results: "TargetNotProvidedError" });
-			if (!(readKey === project.readKey || masterKey === project.masterKey)) {
-				return res.status(401).json({ ok: false, results: "KeyNotAuthorizedError" });
-			}
-			let removeOutliersQuery = "";
-			if (["exclude", "only"].includes(outliers)) {
-				if (!outliers_in) return res.status(400).json({ ok: false, results: "TargetNotProvidedError" });
-				removeOutliersQuery += await getRemoveOutliersQuery(r, `${req.params.PROJECT_ID}_${event_collection}`, outliers_in, outliers);
-			}
-			const filters = isJSON(req.query.filters) ? JSON.parse(req.query.filters) : [];
-			const timeframeQuery = parseTimeframe(req.query.timeframe);
-			const filterQuery = getFilterQuery(filters);
-			const query = `SELECT ${interval ? "*" : `${group_by ? `${group_by},` : ""} MAX("${target_property}")`} FROM ${req.params.PROJECT_ID
-			}_${event_collection} ${timeframeQuery} ${removeOutliersQuery} ${filterQuery} ${!interval && group_by ? `GROUP BY ${group_by}` : ""} LIMIT ${
-				latest || req.app.locals.GLOBAL_LIMIT}`;
-			const { rows: answer } = await client.query(query);
-			let results = JSON.parse(JSON.stringify(answer).replace(/system\.\w*\(|\)/g, ""));
-			if (interval) results = groupByInterval(results, interval, "maximum", target_property);
-			return res.json({ ok: true, results });
-		} catch (error) {
-			return res.status(400).json({ ok: false, results: "BadQueryError", message: error.message });
-		}
-	}));
+  .exec(async (err2, project) => {
+    try {
+      if (err2 || !project) return res.status(404).json({ ok: false, results: "ProjectNotFoundError" });
+      const { readKey, masterKey, event_collection, target_property, group_by, latest, interval, outliers, outliers_in } = req.query;
+      if (!target_property) return res.status(400).json({ ok: false, results: "TargetNotProvidedError" });
+      if (!(readKey === project.readKey || masterKey === project.masterKey)) {
+        return res.status(401).json({ ok: false, results: "KeyNotAuthorizedError" });
+      }
+      let removeOutliersQuery = "";
+      if (["exclude", "only"].includes(outliers)) {
+        if (!outliers_in) return res.status(400).json({ ok: false, results: "TargetNotProvidedError" });
+        removeOutliersQuery += await getRemoveOutliersQuery(r, `${req.params.PROJECT_ID}_${event_collection}`, outliers_in, outliers);
+      }
+      const filters = isJSON(req.query.filters) ? JSON.parse(req.query.filters) : [];
+      const timeframeQuery = parseTimeframe(req.query.timeframe);
+      const filterQuery = getFilterQuery(filters);
+      const query = `SELECT ${interval ? "*" : `${group_by ? `${group_by},` : ""} MAX("${target_property}")`} FROM ${req.params.PROJECT_ID
+      }_${event_collection} ${timeframeQuery} ${removeOutliersQuery} ${filterQuery} ${!interval && group_by ? `GROUP BY ${group_by}` : ""} LIMIT ${
+        latest || req.app.locals.GLOBAL_LIMIT}`;
+      const { rows: answer } = await client.query(query);
+      let results = JSON.parse(JSON.stringify(answer).replace(/system\.\w*\(|\)/g, ""));
+      if (interval) results = groupByInterval(results, interval, "maximum", target_property);
+      return res.json({ ok: true, results });
+    } catch (error) {
+      return res.status(400).json({ ok: false, results: "BadQueryError", message: error.message });
+    }
+  }));
 
 /**
 * @api {get} /projects/:PROJECT_ID/queries/sum Sum
@@ -320,33 +317,33 @@ router.get("/maximum", canAccessForCollection, (req, res) => Project.findOne({ p
 * @apiUse BadQueryError
 */
 router.get("/sum", canAccessForCollection, (req, res) => Project.findOne({ projectId: req.params.PROJECT_ID }).lean()
-	.exec(async (err2, project) => {
-		try {
-			if (err2 || !project) return res.status(404).json({ ok: false, results: "ProjectNotFoundError" });
-			const { readKey, masterKey, event_collection, target_property, group_by, latest, interval, outliers, outliers_in } = req.query;
-			if (!target_property) return res.status(400).json({ ok: false, results: "TargetNotProvidedError" });
-			if (!(readKey === project.readKey || masterKey === project.masterKey)) {
-				return res.status(401).json({ ok: false, results: "KeyNotAuthorizedError" });
-			}
-			let removeOutliersQuery = "";
-			if (["exclude", "only"].includes(outliers)) {
-				if (!outliers_in) return res.status(400).json({ ok: false, results: "TargetNotProvidedError" });
-				removeOutliersQuery += await getRemoveOutliersQuery(r, `${req.params.PROJECT_ID}_${event_collection}`, outliers_in, outliers);
-			}
-			const filters = isJSON(req.query.filters) ? JSON.parse(req.query.filters) : [];
-			const timeframeQuery = parseTimeframe(req.query.timeframe);
-			const filterQuery = getFilterQuery(filters);
-			const query = `SELECT ${interval ? "*" : `${group_by ? `${group_by},` : ""} SUM("${target_property}")`} FROM ${req.params.PROJECT_ID
-			}_${event_collection} ${timeframeQuery} ${removeOutliersQuery} ${filterQuery} ${!interval && group_by ? `GROUP BY ${group_by}` : ""} LIMIT ${
-				latest || req.app.locals.GLOBAL_LIMIT}`;
-			const { rows: answer } = await client.query(query);
-			let results = JSON.parse(JSON.stringify(answer).replace(/system\.\w*\(|\)/g, ""));
-			if (interval) results = groupByInterval(results, interval, "sum", target_property);
-			return res.json({ ok: true, results });
-		} catch (error) {
-			return res.status(400).json({ ok: false, results: "BadQueryError", message: error.message });
-		}
-	}));
+  .exec(async (err2, project) => {
+    try {
+      if (err2 || !project) return res.status(404).json({ ok: false, results: "ProjectNotFoundError" });
+      const { readKey, masterKey, event_collection, target_property, group_by, latest, interval, outliers, outliers_in } = req.query;
+      if (!target_property) return res.status(400).json({ ok: false, results: "TargetNotProvidedError" });
+      if (!(readKey === project.readKey || masterKey === project.masterKey)) {
+        return res.status(401).json({ ok: false, results: "KeyNotAuthorizedError" });
+      }
+      let removeOutliersQuery = "";
+      if (["exclude", "only"].includes(outliers)) {
+        if (!outliers_in) return res.status(400).json({ ok: false, results: "TargetNotProvidedError" });
+        removeOutliersQuery += await getRemoveOutliersQuery(r, `${req.params.PROJECT_ID}_${event_collection}`, outliers_in, outliers);
+      }
+      const filters = isJSON(req.query.filters) ? JSON.parse(req.query.filters) : [];
+      const timeframeQuery = parseTimeframe(req.query.timeframe);
+      const filterQuery = getFilterQuery(filters);
+      const query = `SELECT ${interval ? "*" : `${group_by ? `${group_by},` : ""} SUM("${target_property}")`} FROM ${req.params.PROJECT_ID
+      }_${event_collection} ${timeframeQuery} ${removeOutliersQuery} ${filterQuery} ${!interval && group_by ? `GROUP BY ${group_by}` : ""} LIMIT ${
+        latest || req.app.locals.GLOBAL_LIMIT}`;
+      const { rows: answer } = await client.query(query);
+      let results = JSON.parse(JSON.stringify(answer).replace(/system\.\w*\(|\)/g, ""));
+      if (interval) results = groupByInterval(results, interval, "sum", target_property);
+      return res.json({ ok: true, results });
+    } catch (error) {
+      return res.status(400).json({ ok: false, results: "BadQueryError", message: error.message });
+    }
+  }));
 
 /**
 * @api {get} /projects/:PROJECT_ID/queries/average Average
@@ -390,33 +387,33 @@ router.get("/sum", canAccessForCollection, (req, res) => Project.findOne({ proje
 * @apiUse BadQueryError
 */
 router.get("/average", canAccessForCollection, (req, res) => Project.findOne({ projectId: req.params.PROJECT_ID }).lean()
-	.exec(async (err2, project) => {
-		try {
-			if (err2 || !project) return res.status(404).json({ ok: false, results: "ProjectNotFoundError" });
-			const { readKey, masterKey, event_collection, target_property, group_by, latest, interval, outliers, outliers_in } = req.query;
-			if (!target_property) return res.status(400).json({ ok: false, results: "TargetNotProvidedError" });
-			if (!(readKey === project.readKey || masterKey === project.masterKey)) {
-				return res.status(401).json({ ok: false, results: "KeyNotAuthorizedError" });
-			}
-			let removeOutliersQuery = "";
-			if (["exclude", "only"].includes(outliers)) {
-				if (!outliers_in) return res.status(400).json({ ok: false, results: "TargetNotProvidedError" });
-				removeOutliersQuery += await getRemoveOutliersQuery(r, `${req.params.PROJECT_ID}_${event_collection}`, outliers_in, outliers);
-			}
-			const filters = isJSON(req.query.filters) ? JSON.parse(req.query.filters) : [];
-			const timeframeQuery = parseTimeframe(req.query.timeframe);
-			const filterQuery = getFilterQuery(filters);
-			const query = `SELECT ${interval ? "*" : `${group_by ? `${group_by},` : ""} AVG("${target_property}")`} FROM ${req.params.PROJECT_ID
-			}_${event_collection} ${timeframeQuery} ${removeOutliersQuery} ${filterQuery} ${!interval && group_by ? `GROUP BY ${group_by}` : ""} LIMIT ${
-				latest || req.app.locals.GLOBAL_LIMIT}`;
-			const { rows: answer } = await client.query(query);
-			let results = JSON.parse(JSON.stringify(answer).replace(/system\.\w*\(|\)/g, ""));
-			if (interval) results = groupByInterval(results, interval, "average", target_property);
-			return res.json({ ok: true, results });
-		} catch (error) {
-			return res.status(400).json({ ok: false, results: "BadQueryError", message: error.message });
-		}
-	}));
+  .exec(async (err2, project) => {
+    try {
+      if (err2 || !project) return res.status(404).json({ ok: false, results: "ProjectNotFoundError" });
+      const { readKey, masterKey, event_collection, target_property, group_by, latest, interval, outliers, outliers_in } = req.query;
+      if (!target_property) return res.status(400).json({ ok: false, results: "TargetNotProvidedError" });
+      if (!(readKey === project.readKey || masterKey === project.masterKey)) {
+        return res.status(401).json({ ok: false, results: "KeyNotAuthorizedError" });
+      }
+      let removeOutliersQuery = "";
+      if (["exclude", "only"].includes(outliers)) {
+        if (!outliers_in) return res.status(400).json({ ok: false, results: "TargetNotProvidedError" });
+        removeOutliersQuery += await getRemoveOutliersQuery(r, `${req.params.PROJECT_ID}_${event_collection}`, outliers_in, outliers);
+      }
+      const filters = isJSON(req.query.filters) ? JSON.parse(req.query.filters) : [];
+      const timeframeQuery = parseTimeframe(req.query.timeframe);
+      const filterQuery = getFilterQuery(filters);
+      const query = `SELECT ${interval ? "*" : `${group_by ? `${group_by},` : ""} AVG("${target_property}")`} FROM ${req.params.PROJECT_ID
+      }_${event_collection} ${timeframeQuery} ${removeOutliersQuery} ${filterQuery} ${!interval && group_by ? `GROUP BY ${group_by}` : ""} LIMIT ${
+        latest || req.app.locals.GLOBAL_LIMIT}`;
+      const { rows: answer } = await client.query(query);
+      let results = JSON.parse(JSON.stringify(answer).replace(/system\.\w*\(|\)/g, ""));
+      if (interval) results = groupByInterval(results, interval, "average", target_property);
+      return res.json({ ok: true, results });
+    } catch (error) {
+      return res.status(400).json({ ok: false, results: "BadQueryError", message: error.message });
+    }
+  }));
 
 /**
 * @api {get} /projects/:PROJECT_ID/queries/median Median
@@ -460,9 +457,9 @@ router.get("/average", canAccessForCollection, (req, res) => Project.findOne({ p
 * @apiUse BadQueryError
 */
 router.get("/median", canAccessForCollection, (req, res) => {
-	req.url = "/percentile";
-	req.query = { ...req.query, percentile: 50, isMedian: true };
-	return router.handle(req, res);
+  req.url = "/percentile";
+  req.query = { ...req.query, percentile: 50, isMedian: true };
+  return router.handle(req, res);
 });
 
 /**
@@ -508,48 +505,47 @@ router.get("/median", canAccessForCollection, (req, res) => {
 * @apiUse BadQueryError
 */
 router.get("/percentile", canAccessForCollection, (req, res) => Project.findOne({ projectId: req.params.PROJECT_ID }).lean()
-	.exec(async (err2, project) => {
-		try {
-			if (err2 || !project) return res.status(404).json({ ok: false, results: "ProjectNotFoundError" });
-			const { readKey, masterKey, event_collection, target_property, percentile, group_by, latest, interval, outliers, outliers_in } = req.query;
-			if (!target_property) return res.status(400).json({ ok: false, results: "TargetNotProvidedError" });
-			if (!percentile) return res.status(400).json({ ok: false, results: "TargetNotProvidedError" });
-			if (!(readKey === project.readKey || masterKey === project.masterKey)) {
-				return res.status(401).json({ ok: false, results: "KeyNotAuthorizedError" });
-			}
-			let removeOutliersQuery = "";
-			if (["exclude", "only"].includes(outliers)) {
-				if (!outliers_in) return res.status(400).json({ ok: false, results: "TargetNotProvidedError" });
-				removeOutliersQuery += await getRemoveOutliersQuery(r, `${req.params.PROJECT_ID}_${event_collection}`, outliers_in, outliers);
-			}
-			const filters = isJSON(req.query.filters) ? JSON.parse(req.query.filters) : [];
-			const timeframeQuery = parseTimeframe(req.query.timeframe);
-			const filterQuery = getFilterQuery(filters);
-			const query = `SELECT ${group_by || interval ? "*" : `"${target_property}"`} FROM ${req.params.PROJECT_ID}_${event_collection} ${timeframeQuery
-			} ${removeOutliersQuery} ${filterQuery} LIMIT ${latest || req.app.locals.GLOBAL_LIMIT}`;
-			let { rows: answer } = await client.query(query);
-			filters.forEach((filter) => answer = applyFilter(filter, answer));
-			let results = [];
-			if (!interval && !group_by) {
-				results.push({
-					[req.query.isMedian ? "median" : "percentile"]: percentle(answer.map((el) => el[target_property]),
-						percentile),
-				});
-			} else if (!interval && group_by) {
-				// eslint-disable-next-line no-new-object
-				if (!Object.keys(answer[0]).includes(group_by)) throw new Object({ message: `column "${group_by}" does not exist` });
-				results = groupBy(answer, group_by, "percentile", target_property, percentile).map((el) => {
-					delete Object.assign(el, { [req.query.isMedian ? "median" : "percentile"]: el.result }).result;
-					return el;
-				});
-			} else if (interval) {
-				results = groupByInterval(answer, interval, "percentile", target_property, percentile);
-			}
-			return res.json({ ok: true, results });
-		} catch (error) {
-			return res.status(400).json({ ok: false, results: "BadQueryError", message: error.message });
-		}
-	}));
+  .exec(async (err2, project) => {
+    try {
+      if (err2 || !project) return res.status(404).json({ ok: false, results: "ProjectNotFoundError" });
+      const { readKey, masterKey, event_collection, target_property, percentile, group_by, latest, interval, outliers, outliers_in } = req.query;
+      if (!target_property) return res.status(400).json({ ok: false, results: "TargetNotProvidedError" });
+      if (!percentile) return res.status(400).json({ ok: false, results: "TargetNotProvidedError" });
+      if (!(readKey === project.readKey || masterKey === project.masterKey)) {
+        return res.status(401).json({ ok: false, results: "KeyNotAuthorizedError" });
+      }
+      let removeOutliersQuery = "";
+      if (["exclude", "only"].includes(outliers)) {
+        if (!outliers_in) return res.status(400).json({ ok: false, results: "TargetNotProvidedError" });
+        removeOutliersQuery += await getRemoveOutliersQuery(r, `${req.params.PROJECT_ID}_${event_collection}`, outliers_in, outliers);
+      }
+      const filters = isJSON(req.query.filters) ? JSON.parse(req.query.filters) : [];
+      const timeframeQuery = parseTimeframe(req.query.timeframe);
+      const filterQuery = getFilterQuery(filters);
+      const query = `SELECT ${group_by || interval ? "*" : `"${target_property}"`} FROM ${req.params.PROJECT_ID}_${event_collection} ${timeframeQuery
+      } ${removeOutliersQuery} ${filterQuery} LIMIT ${latest || req.app.locals.GLOBAL_LIMIT}`;
+      let { rows: answer } = await client.query(query);
+      filters.forEach(filter => answer = applyFilter(filter, answer));
+      let results = [];
+      if (!interval && !group_by) {
+        results.push({
+          [req.query.isMedian ? "median" : "percentile"]: percentle(answer.map(el => el[target_property]),
+            percentile),
+        });
+      } else if (!interval && group_by) {
+        if (!Object.keys(answer[0]).includes(group_by)) throw Object({ message: `column "${group_by}" does not exist` });
+        results = groupBy(answer, group_by, "percentile", target_property, percentile).map((el) => {
+          delete Object.assign(el, { [req.query.isMedian ? "median" : "percentile"]: el.result }).result;
+          return el;
+        });
+      } else if (interval) {
+        results = groupByInterval(answer, interval, "percentile", target_property, percentile);
+      }
+      return res.json({ ok: true, results });
+    } catch (error) {
+      return res.status(400).json({ ok: false, results: "BadQueryError", message: error.message });
+    }
+  }));
 
 /**
 * @api {get} /projects/:PROJECT_ID/queries/count_unique Count Unique
@@ -592,34 +588,34 @@ router.get("/percentile", canAccessForCollection, (req, res) => Project.findOne(
 * @apiUse BadQueryError
 */
 router.get("/count_unique", canAccessForCollection, (req, res) => Project.findOne({ projectId: req.params.PROJECT_ID }).lean()
-	.exec(async (err2, project) => {
-		try {
-			if (err2 || !project) return res.status(404).json({ ok: false, results: "ProjectNotFoundError", err: err2 });
-			const { readKey, masterKey, event_collection, target_property, latest, group_by, interval, outliers, outliers_in } = req.query;
-			if (!(readKey === project.readKey || masterKey === project.masterKey)) {
-				return res.status(401).json({ ok: false, results: "KeyNotAuthorizedError" });
-			}
-			let removeOutliersQuery = "";
-			if (["exclude", "only"].includes(outliers)) {
-				if (!outliers_in) return res.status(400).json({ ok: false, results: "TargetNotProvidedError" });
-				removeOutliersQuery += await getRemoveOutliersQuery(r, `${req.params.PROJECT_ID}_${event_collection}`, outliers_in, outliers);
-			}
-			if (!target_property) return res.status(400).json({ ok: false, results: "TargetNotProvidedError" });
-			const filters = isJSON(req.query.filters) ? JSON.parse(req.query.filters) : [];
-			const timeframeQuery = parseTimeframe(req.query.timeframe);
-			const filterQuery = getFilterQuery(filters);
-			const query = `SELECT ${interval ? "*" : `${group_by ? `${group_by},` : ""} COUNT(DISTINCT "${target_property}")`} FROM ${req.params.PROJECT_ID
-			}_${event_collection} ${timeframeQuery} ${removeOutliersQuery} ${filterQuery} ${!interval && group_by ? `GROUP BY ${group_by}` : ""} LIMIT ${
-				latest || req.app.locals.GLOBAL_LIMIT}`;
-			let { rows: answer } = await client.query(query);
-			filters.forEach((filter) => answer = applyFilter(filter, answer));
-			let results = answer;
-			if (interval) results = groupByInterval(results, interval, "count_unique", target_property);
-			return res.json({ ok: true, results });
-		} catch (error) {
-			return res.status(400).json({ ok: false, results: "BadQueryError", message: error.message });
-		}
-	}));
+  .exec(async (err2, project) => {
+    try {
+      if (err2 || !project) return res.status(404).json({ ok: false, results: "ProjectNotFoundError", err: err2 });
+      const { readKey, masterKey, event_collection, target_property, latest, group_by, interval, outliers, outliers_in } = req.query;
+      if (!(readKey === project.readKey || masterKey === project.masterKey)) {
+        return res.status(401).json({ ok: false, results: "KeyNotAuthorizedError" });
+      }
+      let removeOutliersQuery = "";
+      if (["exclude", "only"].includes(outliers)) {
+        if (!outliers_in) return res.status(400).json({ ok: false, results: "TargetNotProvidedError" });
+        removeOutliersQuery += await getRemoveOutliersQuery(r, `${req.params.PROJECT_ID}_${event_collection}`, outliers_in, outliers);
+      }
+      if (!target_property) return res.status(400).json({ ok: false, results: "TargetNotProvidedError" });
+      const filters = isJSON(req.query.filters) ? JSON.parse(req.query.filters) : [];
+      const timeframeQuery = parseTimeframe(req.query.timeframe);
+      const filterQuery = getFilterQuery(filters);
+      const query = `SELECT ${interval ? "*" : `${group_by ? `${group_by},` : ""} COUNT(DISTINCT "${target_property}")`} FROM ${req.params.PROJECT_ID
+      }_${event_collection} ${timeframeQuery} ${removeOutliersQuery} ${filterQuery} ${!interval && group_by ? `GROUP BY ${group_by}` : ""} LIMIT ${
+        latest || req.app.locals.GLOBAL_LIMIT}`;
+      let { rows: answer } = await client.query(query);
+      filters.forEach(filter => answer = applyFilter(filter, answer));
+      let results = answer;
+      if (interval) results = groupByInterval(results, interval, "count_unique", target_property);
+      return res.json({ ok: true, results });
+    } catch (error) {
+      return res.status(400).json({ ok: false, results: "BadQueryError", message: error.message });
+    }
+  }));
 
 /**
 * @api {get} /projects/:PROJECT_ID/queries/select_unique Select Unique
@@ -663,34 +659,34 @@ router.get("/count_unique", canAccessForCollection, (req, res) => Project.findOn
 * @apiUse BadQueryError
 */
 router.get("/select_unique", canAccessForCollection, (req, res) => Project.findOne({ projectId: req.params.PROJECT_ID }).lean()
-	.exec(async (err2, project) => {
-		try {
-			if (err2 || !project) return res.status(404).json({ ok: false, results: "ProjectNotFoundError", err: err2 });
-			const { readKey, masterKey, event_collection, target_property, latest, group_by, interval, outliers, outliers_in } = req.query;
-			if (!(readKey === project.readKey || masterKey === project.masterKey)) {
-				return res.status(401).json({ ok: false, results: "KeyNotAuthorizedError" });
-			}
-			let removeOutliersQuery = "";
-			if (["exclude", "only"].includes(outliers)) {
-				if (!outliers_in) return res.status(400).json({ ok: false, results: "TargetNotProvidedError" });
-				removeOutliersQuery += await getRemoveOutliersQuery(r, `${req.params.PROJECT_ID}_${event_collection}`, outliers_in, outliers);
-			}
-			if (!target_property) return res.status(400).json({ ok: false, results: "TargetNotProvidedError" });
-			const filters = isJSON(req.query.filters) ? JSON.parse(req.query.filters) : [];
-			const timeframeQuery = parseTimeframe(req.query.timeframe);
-			const filterQuery = getFilterQuery(filters);
-			const query = `SELECT ${interval ? "*" : `${group_by ? `${group_by},` : ""} ARRAY_AGG(DISTINCT "${target_property}") AS "${target_property}"`
-			} FROM ${req.params.PROJECT_ID}_${event_collection} ${timeframeQuery} ${removeOutliersQuery} ${filterQuery} ${!interval && group_by
-				? `GROUP BY ${group_by}` : ""} LIMIT ${latest || req.app.locals.GLOBAL_LIMIT}`;
-			let { rows: answer } = await client.query(query);
-			filters.forEach((filter) => answer = applyFilter(filter, answer));
-			let results = answer;
-			if (interval) results = groupByInterval(results, interval, "select_unique", target_property);
-			return res.json({ ok: true, results });
-		} catch (error) {
-			return res.status(400).json({ ok: false, results: "BadQueryError", message: error.message });
-		}
-	}));
+  .exec(async (err2, project) => {
+    try {
+      if (err2 || !project) return res.status(404).json({ ok: false, results: "ProjectNotFoundError", err: err2 });
+      const { readKey, masterKey, event_collection, target_property, latest, group_by, interval, outliers, outliers_in } = req.query;
+      if (!(readKey === project.readKey || masterKey === project.masterKey)) {
+        return res.status(401).json({ ok: false, results: "KeyNotAuthorizedError" });
+      }
+      let removeOutliersQuery = "";
+      if (["exclude", "only"].includes(outliers)) {
+        if (!outliers_in) return res.status(400).json({ ok: false, results: "TargetNotProvidedError" });
+        removeOutliersQuery += await getRemoveOutliersQuery(r, `${req.params.PROJECT_ID}_${event_collection}`, outliers_in, outliers);
+      }
+      if (!target_property) return res.status(400).json({ ok: false, results: "TargetNotProvidedError" });
+      const filters = isJSON(req.query.filters) ? JSON.parse(req.query.filters) : [];
+      const timeframeQuery = parseTimeframe(req.query.timeframe);
+      const filterQuery = getFilterQuery(filters);
+      const query = `SELECT ${interval ? "*" : `${group_by ? `${group_by},` : ""} ARRAY_AGG(DISTINCT "${target_property}") AS "${target_property}"`
+      } FROM ${req.params.PROJECT_ID}_${event_collection} ${timeframeQuery} ${removeOutliersQuery} ${filterQuery} ${!interval && group_by
+        ? `GROUP BY ${group_by}` : ""} LIMIT ${latest || req.app.locals.GLOBAL_LIMIT}`;
+      let { rows: answer } = await client.query(query);
+      filters.forEach(filter => answer = applyFilter(filter, answer));
+      let results = answer;
+      if (interval) results = groupByInterval(results, interval, "select_unique", target_property);
+      return res.json({ ok: true, results });
+    } catch (error) {
+      return res.status(400).json({ ok: false, results: "BadQueryError", message: error.message });
+    }
+  }));
 
 /**
 * @api {get} /projects/:PROJECT_ID/queries/extraction Data Extraction
@@ -742,32 +738,32 @@ router.get("/select_unique", canAccessForCollection, (req, res) => Project.findO
 * @apiUse BadQueryError
 */
 router.get("/extraction", canAccessForCollection, (req, res) => Project.findOne({ projectId: req.params.PROJECT_ID }).lean()
-	.exec(async (err2, project) => {
-		try {
-			if (err2 || !project) return res.status(404).json({ ok: false, results: "ProjectNotFoundError", err: err2 });
-			const { readKey, masterKey, event_collection, target_property, latest, outliers, outliers_in, concat_results } = req.query;
-			if (!(readKey === project.readKey || masterKey === project.masterKey)) {
-				return res.status(401).json({ ok: false, results: "KeyNotAuthorizedError" });
-			}
-			let removeOutliersQuery = "";
-			if (["exclude", "only"].includes(outliers)) {
-				if (!outliers_in) return res.status(400).json({ ok: false, results: "TargetNotProvidedError" });
-				removeOutliersQuery += await getRemoveOutliersQuery(r, `${req.params.PROJECT_ID}_${event_collection}`, outliers_in, outliers);
-			}
-			const filters = isJSON(req.query.filters) ? JSON.parse(req.query.filters) : [];
-			const timeframeQuery = parseTimeframe(req.query.timeframe);
-			const filterQuery = getFilterQuery(filters);
-			const query = `SELECT ${target_property ? `${target_property.split(",").map((el) => `"${el}"`)}` : "*"} FROM ${req.params.PROJECT_ID}_${event_collection} ${timeframeQuery
-			} ${removeOutliersQuery} ${filterQuery} ORDER BY "cenote$timestamp" DESC LIMIT ${latest || req.app.locals.GLOBAL_LIMIT}`;
-			const { rows: answer } = await client.query(query);
-			let results = answer;
-			filters.forEach((filter) => results = applyFilter(filter, results));
-			if (concat_results) results = toObjectOfArrays(results);
-			return res.json({ ok: true, results });
-		} catch (error) {
-			return res.status(400).json({ ok: false, results: "BadQueryError", message: error.message });
-		}
-	}));
+  .exec(async (err2, project) => {
+    try {
+      if (err2 || !project) return res.status(404).json({ ok: false, results: "ProjectNotFoundError", err: err2 });
+      const { readKey, masterKey, event_collection, target_property, latest, outliers, outliers_in, concat_results } = req.query;
+      if (!(readKey === project.readKey || masterKey === project.masterKey)) {
+        return res.status(401).json({ ok: false, results: "KeyNotAuthorizedError" });
+      }
+      let removeOutliersQuery = "";
+      if (["exclude", "only"].includes(outliers)) {
+        if (!outliers_in) return res.status(400).json({ ok: false, results: "TargetNotProvidedError" });
+        removeOutliersQuery += await getRemoveOutliersQuery(r, `${req.params.PROJECT_ID}_${event_collection}`, outliers_in, outliers);
+      }
+      const filters = isJSON(req.query.filters) ? JSON.parse(req.query.filters) : [];
+      const timeframeQuery = parseTimeframe(req.query.timeframe);
+      const filterQuery = getFilterQuery(filters);
+      const query = `SELECT ${target_property ? `${target_property.split(",").map(el => `"${el}"`)}` : "*"} FROM ${req.params.PROJECT_ID}_${event_collection} ${timeframeQuery
+      } ${removeOutliersQuery} ${filterQuery} ORDER BY "cenote$timestamp" DESC LIMIT ${latest || req.app.locals.GLOBAL_LIMIT}`;
+      const { rows: answer } = await client.query(query);
+      let results = answer;
+      filters.forEach(filter => results = applyFilter(filter, results));
+      if (concat_results) results = toObjectOfArrays(results);
+      return res.json({ ok: true, results });
+    } catch (error) {
+      return res.status(400).json({ ok: false, results: "BadQueryError", message: error.message });
+    }
+  }));
 
 /**
 * @api {get} /projects/:PROJECT_ID/queries/eeris/historical Historical Aggregates for eeRIS
@@ -808,187 +804,187 @@ router.get("/extraction", canAccessForCollection, (req, res) => Project.findOne(
 * @apiUse BadQueryError
 */
 router.get("/eeris/historical", canAccessForCollection, (req, res) => Project.findOne({ projectId: req.params.PROJECT_ID }).lean()
-	.exec(async (err2, project) => {
-		try {
-			if (err2 || !project) return res.status(404).json({ ok: false, results: "ProjectNotFoundError" });
-			const { readKey, masterKey, event_collection, target_property, type, dt, startDate, endDate } = req.query;
-			if (!(readKey === project.readKey || masterKey === project.masterKey)) {
-				return res.status(401).json({ ok: false, results: "KeyNotAuthorizedError" });
-			}
-			if (!event_collection) return res.status(400).json({ ok: false, results: "EventCollectionNotProvidedError" });
-			if (!target_property) return res.status(400).json({ ok: false, results: "TargetNotProvidedError" });
-			if (!type) return res.status(400).json({ ok: false, results: "TypeNotProvidedError" });
-			if (!["week", "month", "day", "custom"].includes(type)) {
-				return res.status(400).json({ ok: false, results: "BadQueryError", message: "`type` must be one of 'week', 'month', 'day' or 'custom'" });
-			}
-			const keyName = `${req.params.PROJECT_ID}_${event_collection}_${target_property}_hist`;
-			const value = await r.get(keyName);
-			const jsonValue = JSON.parse(value);
-			const date = type === "day" ? new Date(dt) : new Date();
-			const values = [];
-			const stats = {};
-			stats.min = Number.POSITIVE_INFINITY;
-			stats.max = Number.NEGATIVE_INFINITY;
-			let totalCount = 0;
-			let totalSum = 0;
-			switch (type) {
-				case "week": {
-					for (let i = 0; i < 7; i += 1) {
-						const year = date.getFullYear();
-						const month = (`0${date.getMonth() + 1}`).slice(-2);
-						const day = (`0${date.getDate()}`).slice(-2);
-						const dayCount = jsonValue[`count_${year}-${month}-${day}`] || 0;
-						const daySum = jsonValue[`sum_${year}-${month}-${day}`] || 0;
-						const dayAvg = dayCount !== 0 ? daySum / dayCount : 0;
-						values.unshift(dayAvg);
-						totalCount += dayCount;
-						totalSum += daySum;
-						if (dayAvg < stats.min) stats.min = dayAvg;
-						if (dayAvg > stats.max) stats.max = dayAvg;
-						date.setDate(date.getDate() - 1);
-					}
-					stats.avg = totalCount !== 0 ? totalSum / totalCount : 0;
-					break;
-				}
-				case "month": {
-					const year = date.getFullYear();
-					const month = (`0${date.getMonth() + 1}`).slice(-2);
-					while (date.getMonth() === new Date().getMonth()) {
-						const day = (`0${date.getDate()}`).slice(-2);
-						const dayCount = jsonValue[`count_${year}-${month}-${day}`] || 0;
-						const daySum = jsonValue[`sum_${year}-${month}-${day}`] || 0;
-						const dayAvg = dayCount !== 0 ? daySum / dayCount : 0;
-						totalCount += dayCount;
-						totalSum += daySum;
-						if (dayAvg < stats.min) stats.min = dayAvg;
-						if (dayAvg > stats.max) stats.max = dayAvg;
-						values.unshift(dayAvg);
-						date.setDate(date.getDate() - 1);
-					}
-					stats.avg = totalCount !== 0 ? totalSum / totalCount : 0;
-					break;
-				}
-				case "day": {
-					date.setHours(0);
-					const year = date.getFullYear();
-					const month = (`0${date.getMonth() + 1}`).slice(-2);
-					while (date.getDate() === new Date(dt).getDate()) {
-						const day = (`0${date.getDate()}`).slice(-2);
-						const hours = (`0${date.getHours()}`).slice(-2);
-						const hourCount = jsonValue[`count_${year}-${month}-${day}_${hours}`] || 0;
-						const hourSum = jsonValue[`sum_${year}-${month}-${day}_${hours}`] || 0;
-						const hourAvg = hourCount !== 0 ? hourSum / hourCount : 0;
-						values.push(hourAvg);
-						if (hourAvg < stats.min) stats.min = hourAvg;
-						if (hourAvg > stats.max) stats.max = hourAvg;
-						date.setTime(date.getTime() + (60 * 60 * 1000));
-					}
-					const dayCount = jsonValue[`count_${dt}`] || 0;
-					const daySum = jsonValue[`sum_${dt}`] || 0;
-					stats.avg = dayCount !== 0 ? daySum / dayCount : 0;
-					break;
-				}
-				case "custom": {
-					if (!startDate || !endDate) return res.status(400).json({ ok: false, results: "BadQueryError", message: "`startDate` and `endDate` are required" });
-					const startDt = new Date(startDate);
-					const finalDt = new Date(endDate);
-					if (startDt.getTime() > finalDt.getTime()) return res.status(400).json({ ok: false, results: "BadQueryError", message: "`startDate` must precede `endDate`" });
-					finalDt.setDate(finalDt.getDate() + 1);
-					while (startDt.getTime() < finalDt.getTime()) {
-						const year = startDt.getFullYear();
-						const month = (`0${startDt.getMonth() + 1}`).slice(-2);
-						const day = (`0${startDt.getDate()}`).slice(-2);
-						const dayCount = jsonValue[`count_${year}-${month}-${day}`] || 0;
-						const daySum = jsonValue[`sum_${year}-${month}-${day}`] || 0;
-						const dayAvg = dayCount !== 0 ? daySum / dayCount : 0;
-						values.push(dayAvg);
-						startDt.setDate(startDt.getDate() + 1);
-					}
-					break;
-				}
-				default:
-					return res.status(400).json({ ok: false, results: "BadQueryError", message: "Wrong or missing `type` parameter" });
-			}
+  .exec(async (err2, project) => {
+    try {
+      if (err2 || !project) return res.status(404).json({ ok: false, results: "ProjectNotFoundError" });
+      const { readKey, masterKey, event_collection, target_property, type, dt, startDate, endDate } = req.query;
+      if (!(readKey === project.readKey || masterKey === project.masterKey)) {
+        return res.status(401).json({ ok: false, results: "KeyNotAuthorizedError" });
+      }
+      if (!event_collection) return res.status(400).json({ ok: false, results: "EventCollectionNotProvidedError" });
+      if (!target_property) return res.status(400).json({ ok: false, results: "TargetNotProvidedError" });
+      if (!type) return res.status(400).json({ ok: false, results: "TypeNotProvidedError" });
+      if (!["week", "month", "day", "custom"].includes(type)) {
+        return res.status(400).json({ ok: false, results: "BadQueryError", message: "`type` must be one of 'week', 'month', 'day' or 'custom'" });
+      }
+      const keyName = `${req.params.PROJECT_ID}_${event_collection}_${target_property}_hist`;
+      const value = await r.get(keyName);
+      const jsonValue = JSON.parse(value);
+      const date = type === "day" ? new Date(dt) : new Date();
+      const values = [];
+      const stats = {};
+      stats.min = Number.POSITIVE_INFINITY;
+      stats.max = Number.NEGATIVE_INFINITY;
+      let totalCount = 0;
+      let totalSum = 0;
+      switch (type) {
+        case "week": {
+          for (let i = 0; i < 7; i += 1) {
+            const year = date.getFullYear();
+            const month = (`0${date.getMonth() + 1}`).slice(-2);
+            const day = (`0${date.getDate()}`).slice(-2);
+            const dayCount = jsonValue[`count_${year}-${month}-${day}`] || 0;
+            const daySum = jsonValue[`sum_${year}-${month}-${day}`] || 0;
+            const dayAvg = dayCount !== 0 ? daySum / dayCount : 0;
+            values.unshift(dayAvg);
+            totalCount += dayCount;
+            totalSum += daySum;
+            if (dayAvg < stats.min) stats.min = dayAvg;
+            if (dayAvg > stats.max) stats.max = dayAvg;
+            date.setDate(date.getDate() - 1);
+          }
+          stats.avg = totalCount !== 0 ? totalSum / totalCount : 0;
+          break;
+        }
+        case "month": {
+          const year = date.getFullYear();
+          const month = (`0${date.getMonth() + 1}`).slice(-2);
+          while (date.getMonth() === new Date().getMonth()) {
+            const day = (`0${date.getDate()}`).slice(-2);
+            const dayCount = jsonValue[`count_${year}-${month}-${day}`] || 0;
+            const daySum = jsonValue[`sum_${year}-${month}-${day}`] || 0;
+            const dayAvg = dayCount !== 0 ? daySum / dayCount : 0;
+            totalCount += dayCount;
+            totalSum += daySum;
+            if (dayAvg < stats.min) stats.min = dayAvg;
+            if (dayAvg > stats.max) stats.max = dayAvg;
+            values.unshift(dayAvg);
+            date.setDate(date.getDate() - 1);
+          }
+          stats.avg = totalCount !== 0 ? totalSum / totalCount : 0;
+          break;
+        }
+        case "day": {
+          date.setHours(0);
+          const year = date.getFullYear();
+          const month = (`0${date.getMonth() + 1}`).slice(-2);
+          while (date.getDate() === new Date(dt).getDate()) {
+            const day = (`0${date.getDate()}`).slice(-2);
+            const hours = (`0${date.getHours()}`).slice(-2);
+            const hourCount = jsonValue[`count_${year}-${month}-${day}_${hours}`] || 0;
+            const hourSum = jsonValue[`sum_${year}-${month}-${day}_${hours}`] || 0;
+            const hourAvg = hourCount !== 0 ? hourSum / hourCount : 0;
+            values.push(hourAvg);
+            if (hourAvg < stats.min) stats.min = hourAvg;
+            if (hourAvg > stats.max) stats.max = hourAvg;
+            date.setTime(date.getTime() + (60 * 60 * 1000));
+          }
+          const dayCount = jsonValue[`count_${dt}`] || 0;
+          const daySum = jsonValue[`sum_${dt}`] || 0;
+          stats.avg = dayCount !== 0 ? daySum / dayCount : 0;
+          break;
+        }
+        case "custom": {
+          if (!startDate || !endDate) return res.status(400).json({ ok: false, results: "BadQueryError", message: "`startDate` and `endDate` are required" });
+          const startDt = new Date(startDate);
+          const finalDt = new Date(endDate);
+          if (startDt.getTime() > finalDt.getTime()) return res.status(400).json({ ok: false, results: "BadQueryError", message: "`startDate` must precede `endDate`" });
+          finalDt.setDate(finalDt.getDate() + 1);
+          while (startDt.getTime() < finalDt.getTime()) {
+            const year = startDt.getFullYear();
+            const month = (`0${startDt.getMonth() + 1}`).slice(-2);
+            const day = (`0${startDt.getDate()}`).slice(-2);
+            const dayCount = jsonValue[`count_${year}-${month}-${day}`] || 0;
+            const daySum = jsonValue[`sum_${year}-${month}-${day}`] || 0;
+            const dayAvg = dayCount !== 0 ? daySum / dayCount : 0;
+            values.push(dayAvg);
+            startDt.setDate(startDt.getDate() + 1);
+          }
+          break;
+        }
+        default:
+          return res.status(400).json({ ok: false, results: "BadQueryError", message: "Wrong or missing `type` parameter" });
+      }
 
-			const results = { values, stats };
-			return res.json({ ok: true, results });
-		} catch (error) {
-			return res.status(400).json({ ok: false, results: "BadQueryError", message: error.message });
-		}
-	}));
+      const results = { values, stats };
+      return res.json({ ok: true, results });
+    } catch (error) {
+      return res.status(400).json({ ok: false, results: "BadQueryError", message: error.message });
+    }
+  }));
 
 router.get("/collections", requireAuth, (req, res) => {
-	const query = "SELECT * from information_schema.columns WHERE table_schema='public'";
-	return client.query(query)
-		.then(({ rows: answer }) => {
-			const results = {};
-			answer.filter((el) => el.table_name.startsWith(req.params.PROJECT_ID)).forEach((prop) => {
-				if (prop.column_name === "rowid") return;
-				const collection = prop.table_name.split("_")[1];
-				if (!results[collection]) results[collection] = [];
-				results[collection].push({ column_name: prop.column_name, type: prop.crdb_sql_type });
-			});
-			res.json(results);
-		})
-		.catch((error) => res.status(400).json({ ok: false, results: "BadQueryError", message: error.message }));
+  const query = "SELECT * from information_schema.columns WHERE table_schema='public'";
+  return client.query(query)
+    .then(({ rows: answer }) => {
+      const results = {};
+      answer.filter(el => el.table_name.startsWith(req.params.PROJECT_ID)).forEach((prop) => {
+        if (prop.column_name === "rowid") return;
+        const collection = prop.table_name.split("_")[1];
+        if (!results[collection]) results[collection] = [];
+        results[collection].push({ column_name: prop.column_name, type: prop.crdb_sql_type });
+      });
+      res.json(results);
+    })
+    .catch(err3 => res.status(400).json({ ok: false, results: "BadQueryError", message: err3.message }));
 });
 
 router.put("/addColumn", requireAuth, (req, res) => {
-	const query = `ALTER TABLE ${req.params.PROJECT_ID}_${req.body.event_collection} ADD COLUMN IF NOT EXISTS "${req.body.name}" ${req.body.type}`;
-	return client.query(query)
-		.then(() => res.status(204).json({ ok: true }))
-		.catch((error) => res.status(400).json({ ok: false, results: "BadQueryError", message: error.message }));
+  const query = `ALTER TABLE ${req.params.PROJECT_ID}_${req.body.event_collection} ADD COLUMN IF NOT EXISTS "${req.body.name}" ${req.body.type}`;
+  return client.query(query)
+    .then(() => res.status(204).json({ ok: true }))
+    .catch(err3 => res.status(400).json({ ok: false, results: "BadQueryError", message: err3.message }));
 });
 
 router.delete("/dropColumn", requireAuth, async (req, res) => {
-	try {
-		const query = `ALTER TABLE ${req.params.PROJECT_ID}_${req.body.event_collection} DROP COLUMN IF EXISTS "${req.body.columnToDrop}"`;
-		const redisKey = `${req.params.PROJECT_ID}_${req.body.event_collection}_${req.body.columnToDrop}`;
-		await client.query(query);
-		await r.del(redisKey);
-		await r.del(`${redisKey}_hist`);
-		return res.status(202).json({ ok: true });
-	} catch (error) {
-		return res.status(400).json({ ok: false, results: "BadQueryError", message: error.message });
-	}
+  try {
+    const query = `ALTER TABLE ${req.params.PROJECT_ID}_${req.body.event_collection} DROP COLUMN IF EXISTS "${req.body.columnToDrop}"`;
+    const redisKey = `${req.params.PROJECT_ID}_${req.body.event_collection}_${req.body.columnToDrop}`;
+    await client.query(query);
+    await r.del(redisKey);
+    await r.del(`${redisKey}_hist`);
+    return res.status(202).json({ ok: true });
+  } catch (error) {
+    return res.status(400).json({ ok: false, results: "BadQueryError", message: error.message });
+  }
 });
 
 router.delete("/dropTable", requireAuth, async (req, res) => {
-	try {
-		const queryForKeys = `SHOW COLUMNS FROM ${req.params.PROJECT_ID}_${req.body.event_collection}`;
-		const columns = (await client.query(queryForKeys)).rows
-			.filter((el) => !el.column_name.startsWith("cenote") && el.data_type.toLowerCase() === "decimal").map((el) => el.column_name);
-		for (const column of columns) {
-			const redisKey = `${req.params.PROJECT_ID}_${req.body.event_collection}_${column}`;
-			await r.del(redisKey);
-			await r.del(`${redisKey}_hist`);
-		}
-		const query = `ALTER TABLE IF EXISTS ${req.params.PROJECT_ID}_${req.body.event_collection} RENAME TO deleted_${req.params.PROJECT_ID}_${req.body.event_collection}_${Date.now()}`;
-		await client.query(query);
-		return res.status(202).json({ ok: true });
-	} catch (error) {
-		return res.status(400).json({ ok: false, results: "BadQueryError", message: error.message });
-	}
+  try {
+    const queryForKeys = `SHOW COLUMNS FROM ${req.params.PROJECT_ID}_${req.body.event_collection}`;
+    const columns = (await client.query(queryForKeys)).rows
+      .filter(el => !el.column_name.startsWith("cenote") && el.data_type.toLowerCase() === "decimal").map(el => el.column_name);
+    for (const column of columns) {
+      const redisKey = `${req.params.PROJECT_ID}_${req.body.event_collection}_${column}`;
+      await r.del(redisKey);
+      await r.del(`${redisKey}_hist`);
+    }
+    const query = `ALTER TABLE IF EXISTS ${req.params.PROJECT_ID}_${req.body.event_collection} RENAME TO deleted_${req.params.PROJECT_ID}_${req.body.event_collection}_${Date.now()}`;
+    await client.query(query);
+    return res.status(202).json({ ok: true });
+  } catch (error) {
+    return res.status(400).json({ ok: false, results: "BadQueryError", message: error.message });
+  }
 });
 
 router.delete("/testCleanup", async (req, res) => {
-	try {
-		const { eventCollection } = req.query;
-		const queryForKeys = `SHOW COLUMNS FROM ${req.params.PROJECT_ID}_${eventCollection}`;
-		const columns = (await client.query(queryForKeys)).rows
-			.filter((el) => !el.column_name.startsWith("cenote") && el.data_type.toLowerCase() === "decimal").map((el) => el.column_name);
-		for (const column of columns) {
-			const redisKeyDefault = `${req.params.PROJECT_ID}_${eventCollection}_${column}`;
-			const redisKeyeeRIS = `${req.params.PROJECT_ID}_${eventCollection}_${column}_hist`;
-			await r.del(redisKeyDefault);
-			await r.del(redisKeyeeRIS);
-		}
-		const query = `DROP TABLE IF EXISTS ${req.params.PROJECT_ID}_${eventCollection}`;
-		client.query(query);
-		return res.status(204).json({ ok: true });
-	} catch (error) {
-		return res.status(400).json({ ok: false, results: "BadQueryError", message: error.message });
-	}
+  try {
+    const { eventCollection } = req.query;
+    const queryForKeys = `SHOW COLUMNS FROM ${req.params.PROJECT_ID}_${eventCollection}`;
+    const columns = (await client.query(queryForKeys)).rows
+      .filter(el => !el.column_name.startsWith("cenote") && el.data_type.toLowerCase() === "decimal").map(el => el.column_name);
+    for (const column of columns) {
+      const redisKeyDefault = `${req.params.PROJECT_ID}_${eventCollection}_${column}`;
+      const redisKeyeeRIS = `${req.params.PROJECT_ID}_${eventCollection}_${column}_hist`;
+      await r.del(redisKeyDefault);
+      await r.del(redisKeyeeRIS);
+    }
+    const query = `DROP TABLE IF EXISTS ${req.params.PROJECT_ID}_${eventCollection}`;
+    client.query(query);
+    return res.status(204).json({ ok: true });
+  } catch (error) {
+    return res.status(400).json({ ok: false, results: "BadQueryError", message: error.message });
+  }
 });
 
 router.all("/*", (req, res) => res.status(400).json({ ok: false, results: "This is not a valid query!" }));

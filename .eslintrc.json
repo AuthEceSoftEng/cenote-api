@@ -1,4 +1,5 @@
 {
+  "extends": "iamnapo",
   "rules": {
     "camelcase": "off"
   },
