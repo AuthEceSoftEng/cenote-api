@@ -1,5 +1,7 @@
-const express = require("express");
 const path = require("path");
+
+const express = require("express");
+
 const auth = require("./auth");
 const organization = require("./organization");
 const organizations = require("./organizations");
