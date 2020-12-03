@@ -112,7 +112,7 @@ router.get("/count", canAccessForCollection, (req, res) => Project.findOne({ pro
     try {
       if (err2 || !project) return res.status(404).json({ ok: false, results: "ProjectNotFoundError" });
       const { readKey, masterKey, event_collection, group_by, latest, interval, outliers, outliers_in } = req.query;
-      if (!(readKey === project.readKey || masterKey === project.masterKey)) {
+      if (!(project.readKeys.includes(readKey) || project.masterKeys.includes(masterKey))) {
         return res.status(401).json({ ok: false, results: "KeyNotAuthorizedError" });
       }
       let removeOutliersQuery = "";
@@ -182,7 +182,7 @@ router.get("/minimum", canAccessForCollection, (req, res) => Project.findOne({ p
       if (err2 || !project) return res.status(404).json({ ok: false, results: "ProjectNotFoundError" });
       const { readKey, masterKey, event_collection, target_property, group_by, latest, interval, outliers, outliers_in } = req.query;
       if (!target_property) return res.status(400).json({ ok: false, results: "TargetNotProvidedError" });
-      if (!(readKey === project.readKey || masterKey === project.masterKey)) {
+      if (!(project.readKeys.includes(readKey) || project.masterKeys.includes(masterKey))) {
         return res.status(401).json({ ok: false, results: "KeyNotAuthorizedError" });
       }
       let removeOutliersQuery = "";
@@ -252,7 +252,7 @@ router.get("/maximum", canAccessForCollection, (req, res) => Project.findOne({ p
       if (err2 || !project) return res.status(404).json({ ok: false, results: "ProjectNotFoundError" });
       const { readKey, masterKey, event_collection, target_property, group_by, latest, interval, outliers, outliers_in } = req.query;
       if (!target_property) return res.status(400).json({ ok: false, results: "TargetNotProvidedError" });
-      if (!(readKey === project.readKey || masterKey === project.masterKey)) {
+      if (!(project.readKeys.includes(readKey) || project.masterKeys.includes(masterKey))) {
         return res.status(401).json({ ok: false, results: "KeyNotAuthorizedError" });
       }
       let removeOutliersQuery = "";
@@ -322,7 +322,7 @@ router.get("/sum", canAccessForCollection, (req, res) => Project.findOne({ proje
       if (err2 || !project) return res.status(404).json({ ok: false, results: "ProjectNotFoundError" });
       const { readKey, masterKey, event_collection, target_property, group_by, latest, interval, outliers, outliers_in } = req.query;
       if (!target_property) return res.status(400).json({ ok: false, results: "TargetNotProvidedError" });
-      if (!(readKey === project.readKey || masterKey === project.masterKey)) {
+      if (!(project.readKeys.includes(readKey) || project.masterKeys.includes(masterKey))) {
         return res.status(401).json({ ok: false, results: "KeyNotAuthorizedError" });
       }
       let removeOutliersQuery = "";
@@ -392,7 +392,7 @@ router.get("/average", canAccessForCollection, (req, res) => Project.findOne({ p
       if (err2 || !project) return res.status(404).json({ ok: false, results: "ProjectNotFoundError" });
       const { readKey, masterKey, event_collection, target_property, group_by, latest, interval, outliers, outliers_in } = req.query;
       if (!target_property) return res.status(400).json({ ok: false, results: "TargetNotProvidedError" });
-      if (!(readKey === project.readKey || masterKey === project.masterKey)) {
+      if (!(project.readKeys.includes(readKey) || project.masterKeys.includes(masterKey))) {
         return res.status(401).json({ ok: false, results: "KeyNotAuthorizedError" });
       }
       let removeOutliersQuery = "";
@@ -511,7 +511,7 @@ router.get("/percentile", canAccessForCollection, (req, res) => Project.findOne(
       const { readKey, masterKey, event_collection, target_property, percentile, group_by, latest, interval, outliers, outliers_in } = req.query;
       if (!target_property) return res.status(400).json({ ok: false, results: "TargetNotProvidedError" });
       if (!percentile) return res.status(400).json({ ok: false, results: "TargetNotProvidedError" });
-      if (!(readKey === project.readKey || masterKey === project.masterKey)) {
+      if (!(project.readKeys.includes(readKey) || project.masterKeys.includes(masterKey))) {
         return res.status(401).json({ ok: false, results: "KeyNotAuthorizedError" });
       }
       let removeOutliersQuery = "";
@@ -592,7 +592,7 @@ router.get("/count_unique", canAccessForCollection, (req, res) => Project.findOn
     try {
       if (err2 || !project) return res.status(404).json({ ok: false, results: "ProjectNotFoundError", err: err2 });
       const { readKey, masterKey, event_collection, target_property, latest, group_by, interval, outliers, outliers_in } = req.query;
-      if (!(readKey === project.readKey || masterKey === project.masterKey)) {
+      if (!(project.readKeys.includes(readKey) || project.masterKeys.includes(masterKey))) {
         return res.status(401).json({ ok: false, results: "KeyNotAuthorizedError" });
       }
       let removeOutliersQuery = "";
@@ -663,7 +663,7 @@ router.get("/select_unique", canAccessForCollection, (req, res) => Project.findO
     try {
       if (err2 || !project) return res.status(404).json({ ok: false, results: "ProjectNotFoundError", err: err2 });
       const { readKey, masterKey, event_collection, target_property, latest, group_by, interval, outliers, outliers_in } = req.query;
-      if (!(readKey === project.readKey || masterKey === project.masterKey)) {
+      if (!(project.readKeys.includes(readKey) || project.masterKeys.includes(masterKey))) {
         return res.status(401).json({ ok: false, results: "KeyNotAuthorizedError" });
       }
       let removeOutliersQuery = "";
@@ -742,7 +742,7 @@ router.get("/extraction", canAccessForCollection, (req, res) => Project.findOne(
     try {
       if (err2 || !project) return res.status(404).json({ ok: false, results: "ProjectNotFoundError", err: err2 });
       const { readKey, masterKey, event_collection, target_property, latest, outliers, outliers_in, concat_results } = req.query;
-      if (!(readKey === project.readKey || masterKey === project.masterKey)) {
+      if (!(project.readKeys.includes(readKey) || project.masterKeys.includes(masterKey))) {
         return res.status(401).json({ ok: false, results: "KeyNotAuthorizedError" });
       }
       let removeOutliersQuery = "";
@@ -808,7 +808,7 @@ router.get("/eeris/historical", canAccessForCollection, (req, res) => Project.fi
     try {
       if (err2 || !project) return res.status(404).json({ ok: false, results: "ProjectNotFoundError" });
       const { readKey, masterKey, event_collection, target_property, type, dt, startDate, endDate } = req.query;
-      if (!(readKey === project.readKey || masterKey === project.masterKey)) {
+      if (!(project.readKeys.includes(readKey) || project.masterKeys.includes(masterKey))) {
         return res.status(401).json({ ok: false, results: "KeyNotAuthorizedError" });
       }
       if (!event_collection) return res.status(400).json({ ok: false, results: "EventCollectionNotProvidedError" });

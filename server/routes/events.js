@@ -113,7 +113,9 @@ router.post("/:EVENT_COLLECTION", (req, res) => Project.findOne({ projectId: req
   if (err2 || !project) return res.status(404).json({ error: "ProjectNotFoundError" });
   const { writeKey, masterKey } = req.query;
   if (!writeKey && !masterKey) return res.status(403).json({ error: "NoCredentialsSentError" });
-  if (!(writeKey === project.writeKey || masterKey === project.masterKey)) return res.status(401).json({ message: "KeyNotAuthorizedError" });
+  if (!(project.writeKeys.includes(writeKey) || project.masterKeys.includes(masterKey))) {
+    return res.status(401).json({ message: "KeyNotAuthorizedError" });
+  }
   const cenote = {
     created_at: moment().valueOf(),
     id: uuid(),
