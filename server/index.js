@@ -28,8 +28,12 @@ const db = `${(process.env.DATABASE_URL || "mongodb://localhost:27017/cenote-db"
 mongoose.connect(db, mongooseOptions).catch(err => console.error(err.message));
 
 const app = express();
-
-if (process.env.NODE_ENV !== "test") app.use(morgan("dev", { skip(req) { return req.originalUrl.includes("/docs/"); } }));
+if (process.env.NODE_ENV !== "test") {
+  app.use(morgan(process.env.NODE_ENV === "development"
+    ? "dev"
+    : "[:date[clf]] :method :url :status - :response-time ms - :res[content-length]",
+  { skip(req) { return req.originalUrl.includes("/docs/"); } }));
+}
 app.use(compression());
 app.use(bodyParser.json({ limit: "50mb" }));
 app.use(bodyParser.urlencoded({ extended: true, limit: "50mb" }));
