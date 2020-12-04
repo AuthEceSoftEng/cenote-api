@@ -62,34 +62,20 @@ router.get("/:PROJECT_ID/collaborators", requireAuth, (req, res) => {
 });
 
 router.put("/:PROJECT_ID/collaborator", async (req, res) => {
-  try {
-    const { username } = req.body;
-    if (!username) res.status(400).send({ message: "Update project failed", err: "`username` is required!" });
-    const savedProject = await Project.findOne({ projectId: req.params.PROJECT_ID }, "-__v -organization").exec();
-    if (!savedProject) return res.status(404).json({ message: "Project not found!" });
-    if (Array.isArray(username)) {
-      const newArray = [];
-      for (const usrname of username) {
-        const collaborator = await Organization.findOne({ username: usrname }, "-__v").exec();
-        if (!collaborator) return res.status(404).json({ message: "Collaborator not found!" });
-        newArray.push(collaborator._id);
-      }
-      savedProject.collaborators = newArray;
-      savedProject.markModified("collaborators");
-      savedProject.save();
-    } else {
-      const collaborator = await Organization.findOne({ username }, "-__v").exec();
-      if (!collaborator) return res.status(404).json({ message: "Collaborator not found!" });
-      if (!savedProject.collaborators.includes(collaborator._id)) {
-        savedProject.collaborators.push(collaborator._id);
-        savedProject.markModified("collaborators");
-        savedProject.save();
-      }
-    }
-    return res.send({ message: "Updated project successfully", project: savedProject.hide() });
-  } catch (error) {
-    return res.status(500).json({ message: "Update project failed", err: error });
+  const { username } = req.body;
+  if (!username) res.status(400).send({ message: "Update project failed", err: "`username` is required!" });
+  if (!Array.isArray(username)) res.status(400).send({ message: "Update project failed", err: "Expected array of collaborators!" });
+  const newArray = [];
+  for (const usrname of username) {
+    const collaborator = await Organization.findOne({ username: usrname }, "-__v").exec();
+    if (!collaborator) return res.status(404).json({ message: "Collaborator not found!" });
+    newArray.push(collaborator._id);
   }
+  return Project.findOneAndUpdate({ projectId: req.params.PROJECT_ID },
+    { collaborators: newArray }, (err, savedProject) => {
+      if (err) return res.status(400).send({ message: "Update project failed", err });
+      return res.send({ message: "Updated project successfully", project: savedProject.hide() });
+    });
 });
 
 router.put("/", requireAuth, (req, res) => {
