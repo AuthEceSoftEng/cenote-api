@@ -836,11 +836,11 @@ router.get("/eeris/historical", canAccessForCollection, (req, res) => Project.fi
             const dayCount = jsonValue[`count_${year}-${month}-${day}`] || 0;
             const daySum = jsonValue[`sum_${year}-${month}-${day}`] || 0;
             const dayAvg = dayCount !== 0 ? daySum / dayCount : 0;
-            values.unshift(dayAvg);
             totalCount += dayCount;
             totalSum += daySum;
             if (dayAvg < stats.min) stats.min = dayAvg;
             if (dayAvg > stats.max) stats.max = dayAvg;
+            values.unshift(dayAvg);
             date.setDate(date.getDate() - 1);
           }
           stats.avg = totalCount !== 0 ? totalSum / totalCount : 0;
@@ -897,9 +897,14 @@ router.get("/eeris/historical", canAccessForCollection, (req, res) => Project.fi
             const dayCount = jsonValue[`count_${year}-${month}-${day}`] || 0;
             const daySum = jsonValue[`sum_${year}-${month}-${day}`] || 0;
             const dayAvg = dayCount !== 0 ? daySum / dayCount : 0;
+            totalCount += dayCount;
+            totalSum += daySum;
+            if (dayAvg < stats.min) stats.min = dayAvg;
+            if (dayAvg > stats.max) stats.max = dayAvg;
             values.push(dayAvg);
             startDt.setDate(startDt.getDate() + 1);
           }
+          stats.avg = totalCount !== 0 ? totalSum / totalCount : 0;
           break;
         }
         default:
